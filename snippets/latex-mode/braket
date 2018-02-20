@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: braket
+# key: braket
+# binding: C-` <
+# --
+\langle ${1:`(if (region-active-p)(car (split-string yas-selected-text "/")))`} | \hat{ ${2:`(if (region-active-p)(cadr (split-string yas-selected-text "/")))`} } | ${3:`(if (region-active-p)(cadr  (cdr (split-string yas-selected-text "/"))))`} \rangle

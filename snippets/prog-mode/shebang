@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: shebang
+# key: sb
+# --
+`(yas-with-comment "!/usr/local/bin/")`${1:python3}
+`(yas-with-comment " c-basic-offset: ")`${2:4}; tab-width: ${3:4}; indent-tabs-mode: ${4:t}
+`(yas-with-comment " vi: set shiftwidth=")`$2 tabstop=$3 ${5:$$(if (equalp (yas-field-value 4) "t") "noexpandtab" "expandtab")}
+`(yas-with-comment " :indentSize=")`$2:tabSize=$3:noTabs=${6: $$(if (equalp (yas-field-value 4) "t") "false" "true")}
+$0

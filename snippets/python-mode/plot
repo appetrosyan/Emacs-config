@@ -1,0 +1,10 @@
+# -*- mode: snippet -*-
+# name: plot
+# key: plot
+# --
+plt.figure()
+plt.plot(${1:xdata}, ${2:ydata}, '${3:k+}')
+plt.xlabel("${5:xlabel}")
+plt.ylabel("${4:ylabel}")
+plt.title("${6:Title}")
+plt.savefig("$6.svg")

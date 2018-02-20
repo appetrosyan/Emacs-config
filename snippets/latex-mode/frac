@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: frac
+# key: frac
+# binding: C-` /
+# --
+\frac{${1:`(if (region-active-p)(car (split-string yas-selected-text 
+"/")))`}}{${2:`(if (region-active-p)(cadr (split-string 
+yas-selected-text "/")))`}}$0

@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: leftsquare
+# key: l[
+# binding: C-` M-{
+# --
+\left[ `yas-selected-text` $1 \right]$0

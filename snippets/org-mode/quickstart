@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: quickstart
+# key: quickstart
+# --
+#+TITLE: $1
+#+AUTHOR: Aleksandr Petrosyan
+#+EMAIL:ap886@cam.ac.uk

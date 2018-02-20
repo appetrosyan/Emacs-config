@@ -1,0 +1,819 @@
+#+TITLE: Emacs main configuration and notes file
+#+AUTHOR: Alex Petrosyan
+
+* Small tweaks
+
+** Re-enabling functions
+   Some unfairly disabled functions
+#+begin_src emacs-lisp :tangle yes
+;; these functions are useful. activate them.
+(put 'downcase-region 'disabled nil)
+(put 'upcase-region 'disabled nil)
+(put 'narrow-to-region 'disabled nil)
+(put 'dired-find-alternate-file 'disabled nil)
+#+end_src
+
+
+
+** Time saving
+   Minimise typing in prompts
+
+#+begin_src emacs-lisp :tangle yes
+(defalias 'yes-or-no-p 'y-or-n-p)
+#+end_src
+
+** Sane defaults
+
+   Syntax highlighting when writing in org mode is a must. 
+
+#+begin_src emacs-lisp :tangle yes
+;; (setq org-src-fontify-natively t)
+  (custom-set-variables
+   '(org-fontify-natively t)
+   )
+#+end_src
+
+Custom set variables is a powerful tool and overrides most of what you do in an init file. But, you can custom set them manually whenever you wish, and these choices will never be overridden. 
+
+One caveat is the changed syntax, and the fact that it's less readable than `setq` for example. The good thing though, is that if in emacs for some reason something in your config file doesn't load, you know how to fix it. 
+
+#+begin_src emacs-lisp :tangle yes
+  (custom-set-variables
+   '(global-linum-mode t)
+   )
+#+end_src
+
+** Org mode specials
+
+I use org mode with orgzly to manage TODO tasks. 
+
+
+ 
+
+
+* Packages
+** Core
+*** Package.el
+The most important package to manage packages. 
+
+#+begin_src emacs-lisp :tangle yes
+(require 'package)
+
+(add-to-list 'package-archives
+             '("melpa" . "http://melpa.org/packages/") t)
+(add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
+(when (boundp 'package-pinned-packages)
+  (setq package-pinned-packages
+        '((org-plus-contrib . "org"))))
+(package-initialize)
+#+end_src
+*** use-package
+
+#+begin_src emacs-lisp :tangle yes
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+;; From use-package README
+(eval-when-compile
+  (require 'use-package))
+(use-package diminish
+  :ensure t
+  )
+(use-package bind-key
+  :ensure t
+  )
+#+end_src
+*** Org-contrib
+
+We would like to have the latest and greatest, so pull in the most
+up-to-date org. 
+
+
+
+#+begin_src emacs-lisp :tangle yes
+(use-package org
+  :ensure org-plus-contrib)
+#+end_src
+
+#+begin_src emacs-lisp :tanrgle yes
+(use-package org-ref
+  :ensure t)
+#+end_src
+
+
+** Time savers
+*** Yet another snippet framework
+
+`Yasnippet` is probably the most powerful tool in emacs. Give me only yas and I can produce source incredibly quickly. 
+#+begin_src emacs-lisp :tangle yes
+(use-package yasnippet
+  :ensure t
+  :mode ("/\\.emacs\\.d/snippets/" . snippet-mode)
+  :init
+  (custom-set-variables
+    '( yas-verbosity 3)
+    '(yas-global-mode 1)
+    )
+  )
+#+end_src
+
+*** Company
+
+Company, a very powerful autocompletion system. It has a few quirks, see below, that we will need to tackle, but overall it's my second favourite time-saver. 
+It essentially can:
+- Complete language keywords. 
+- Terms you've already typed in.
+- elisp functions when writing a config file
+#+begin_src emacs-lisp :tangle yes
+  (use-package company
+    :ensure t
+    :commands company-mode
+    :init
+    ;(add-hook 'prog-mode-hook 'company-mode) 
+    ;(add-hook 'LaTeX-mode-hook 'company-mode)
+    ;(add-hook 'org-mode-hook 'company-mode)
+    :config
+   (custom-set-variables
+   '(company-idle-delay .1)
+   '(company-show-numbers t)
+   '(company-echo-delay 0)
+   '(company-minimum-prefix-length 2)
+   '(company-selection-wrap-around t)
+   '(company-transformers '(company-sort-by-occurrence company-sort-by-backend-importance ))
+  )
+    (delete 'company-capf company-backends)
+    :bind ("M-<Space>" . company-complete-common)
+    ) 
+
+#+end_src
+
+Since you sometimes do need to know what your completion does, it's useful to have this snippet. 
+
+#+begin_src emacs-lisp :tangle yes
+(use-package company-quickhelp
+  :ensure t
+  :defer t
+  :init (add-hook 'global-company-mode-hook #'company-quickhelp-mode)
+  )
+#+end_src
+
+*** Smartparens
+
+Probably the most underrted package in existence. It's a must to have when doing lisp and Clojure work. It allows for you to surround items with parentheses, delimiters on a whim. 
+
+#+begin_src emacs-lisp :tangle yes
+  (use-package smartparens
+    :ensure t
+    :diminish smartparens-mode
+    :init
+    (smartparens-global-mode)
+    :bind 
+    ("M-<backspace>". sp-backward-kill-sexp)
+    ("M-<delete>". sp-forward-kill-sexp)
+    :config
+    (require 'smartparens-config)
+    (add-hook 'eval-expression-minibuffer-setup-hook #'smartparens-mode)
+    ;; markdown
+    (defun sp--markdown-skip-asterisk (ms mb me)
+      (save-excursion
+	(goto-char mb)
+	(save-match-data (looking-at "^\\* "))))
+    (sp-with-modes 'markdown-<mode
+      (sp-local-pair "*" "*"
+       :unless '(sp-point-after-word-p sp-point-at-bol-p)
+       :skip-match 'sp--markdown-skip-asterisk)
+      (sp-local-pair "**" "**")
+      (sp-local-pair "_" "_" :unless '(sp-point-after-word-p)))
+    ;; haskell
+    (add-to-list 'sp-no-reindent-after-kill-modes 'haskell-mode)
+    ;;; org-mode
+    (defun sp--org-skip-asterisk (ms mb me)
+      (or (and (= (line-beginning-position) mb)
+	       (eq 32 (char-after (1+ mb))))
+	  (and (= (1+ (line-beginning-position)) me)
+	       (eq 32 (char-after me)))))
+    (defun sp--org-inside-LaTeX (id action context)
+      (org-inside-LaTeX-fragment-p))
+    (sp-with-modes 'org-mode
+      (sp-local-pair "*" "*"
+       :unless '(sp-point-after-word-p sp--org-inside-LaTeX sp-point-at-bol-p)
+       :skip-match 'sp--org-skip-asterisk)
+      (sp-local-pair "/" "/" :unless '(sp-point-after-word-p sp--org-inside-LaTeX))
+      (sp-local-pair "~" "~" :unless '(sp-point-after-word-p sp--org-inside-LaTeX))
+      (sp-local-pair "=" "=" :unless '(sp-point-after-word-p sp--org-inside-LaTeX))
+      (sp-local-pair "\\[" "\\]")))
+#+end_src
+
+
+*** Multiple cursors
+
+It's not as powerful or as intuitive as the macros present in vim or emacs, but it still has plenty of uses, when you, for example need to rename a symbol, etc. 
+
+#+begin_src emacs-lisp :tangle yes
+(use-package multiple-cursors
+  :ensure t
+  :bind(
+	("C-n". mc/mark-next-like-this)	      
+	("C-s-p" . mc/mark-previous-like-this)	  
+	("C-f". mc/mark-all-like-this)	
+	("C-<mouse-1>" . mc/add-cursor-on-click)
+	)
+  )
+#+end_src
+*** Elmacro
+
+Speaking of macros, it's one of the best parts of emacs. BUt sometimes you wish that you could have carried over the macro you've recorded across sessions. Have no fear, elmacro to the rescue. 
+
+It essentially converts keystrokes to elisp function calls, which makes writing and optimising a function, that as opposed to a keyboard macro doesn't have to be defined per each session. 
+** Utilities
+*** Sudo-save
+
+
+
+This saves me a lot of trouble on Linux systems. Say you wanted to edit a system config file, but you didn't launch emacs as root - you forgot. 
+
+#+begin_src emacs-lisp :tangle yes
+(defun sudo-save ()
+  (interactive)
+  (if (not buffer-file-name)
+      (write-file (concat "/sudo:root@localhost:" (ido-read-file-name "File:")))
+    (write-file (concat "/sudo:root@localhost:" buffer-file-name))
+    )
+  )
+#+end_src
+
+*** Tramp
+
+It's an absolute must. Lets you use ssh to connect to remote hosts and more.
+
+#+begin_src emacs-lisp :tangle no
+(use-package tramp
+	:ensure t
+)
+#+end_src
+
+*** Expand region
+
+This package is sop
+*** Magit
+#+begin_src emacs-lisp :tangle yes
+
+  (use-package magit
+    :ensure t
+    :bind ("C-x g" . magit-status)
+
+    )
+#+end_src
+The magical git integration package that saved me on more than one occasion the embarrasment of not 
+** User interface
+*** Helm
+
+    I'm somewhat new to helm, but my brief brush has made me decide
+    that it's not a good package. True, it has potential, but as of
+    now, it's poorly made, poorly maintained, and sadly not
+    particularly well thought-through. 
+
+    I still include the configuration I used, but would advise against
+    using it. 
+
+#+begin_src emacs-lisp :tangle no
+(use-package helm
+  :ensure t
+  :diminish helm-mode
+  :init (progn
+          (require 'helm-config)
+          (use-package helm-projectile
+            :ensure t
+            :commands helm-projectile
+            :bind ("C-c p h" . helm-projectile))
+          (use-package helm-ag :defer 10  :ensure t)
+          (setq helm-locate-command "mdfind -interpret -name %s %s"
+                helm-ff-newfile-prompt-p nil
+                helm-M-x-fuzzy-match t)
+          (helm-mode)
+          (use-package helm-swoop
+            :ensure t
+            :bind ("H-w" . helm-swoop)))
+	  (use-package helm-descbinds
+		:ensure t
+		:init (helm-descbinds-mode)
+		)
+backup.bak		:config (setq helm-allow-mouse t)
+  :bind (("C-c h" . helm-command-prefix)
+         ("C-x b" . helm-mini)
+         ("C-`" . helm-resume)
+         ("M-x" . helm-M-x)
+         ("C-x C-f" . helm-find-files)))
+#+end_src
+*** IDO
+
+    First, just start the ido major mode
+#+begin_src emacs-lisp :tangle yes
+(ido-mode)
+#+end_src
+
+Now, since Emacs could potentially make this the default for anything
+that can have completions, let's use it with everything that has
+completions. 
+
+#+begin_src emacs-lisp :tangle yes
+(use-package ido-completing-read+
+  :ensure t
+  :config (ido-ubiquitous-mode)
+  )
+#+end_src
+
+And one of the features of Helm, that I do think are useful but not present in ido, is fuzzy matching. 
+
+#+begin_src emacs-lisp :tangle yes
+   (use-package flx-ido
+     :ensure t
+     :config
+     (flx-ido-mode 1)
+     (setq ido-enable-flex-matching 1)
+     (setq ido-use-faces nil)
+  )
+#+end_src
+
+*** LaTeX - pretty symbols
+
+This replaces macros in text with the corresponding ASCII symbols. If you have a huge formula, this helps immensely. 
+
+#+begin_src emacs-lisp :tangle yes
+(use-package latex-pretty-symbols
+  :ensure t
+  :init
+  (progn 
+    (add-hook 'LaTeX-mode-hook 'prettify-symbols-mode)
+    (add-hook 'LaTex-mode-hook 'LaTeX-math-mode)
+    (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+    (setq reftex-plug-into-AUCTeX t)
+    (setq TeX-auto-save t)
+    )
+  )
+
+#+end_src
+
+
+We might also want to have pretty symbols everywhere, not just LaTeX
+source code. I found that it made python source code even more
+readablke for example. 
+
+#+begin_src emacs-lisp :tangle yes
+(global-prettify-symbols-mode 1)
+(add-hook
+ 'python-mode-hook
+ (lambda ()
+   (mapc (lambda (pair) (push pair prettify-symbols-alist))
+         '(;; Syntax
+           ("def" .      #x2131)
+           ("not" .      #x2757)
+           ("in" .       #x2208)
+           ("not in" .   #x2209)
+           ("return" .   #x27fc)
+           ("yield" .    #x27fb)
+           ("for" .      #x2200)
+           ;; Base Types
+           ("int" .      #x2124)
+           ("float" .    #x211d)
+           ("str" .      #x1d54a)
+           ("True" .     #x1d54b)
+           ("False" .    #x1d53d)
+           ;; Mypy
+	   ("*"	.	 #x00d7)
+           ("Dict" .     #x1d507)
+           ("List" .     #x2112)
+           ("Tuple" .    #x2a02)
+           ("Set" .      #x2126)
+	   ("sum" . 	 #x2211)
+           ("Iterable" . #x1d50a)
+           ("Any" .      #x2754)
+	   ("lambda" .	 #x03bb)
+           ("Union" .    #x22c3)
+	   )
+	 )
+   )
+ )
+#+end_src
+
+*** Fira code
+
+for ligatures. Very useful, if you ask me.
+
+#+begin_src emacs-lisp :tangle yes
+;; FiraCode support 
+(when (window-system)
+  (set-frame-font "Fira Code"))
+(let ((alist '((33 . ".\\(?:\\(?:==\\|!!\\)\\|[!=]\\)")
+               (35 . ".\\(?:###\\|##\\|_(\\|[#(?[_{]\\)")
+               (36 . ".\\(?:>\\)")
+               (37 . ".\\(?:\\(?:%%\\)\\|%\\)")
+               (38 . ".\\(?:\\(?:&&\\)\\|&\\)")
+               (42 . ".\\(?:\\(?:\\*\\*/\\)\\|\\(?:\\*[*/]\\)\\|[*/>]\\)")
+               (43 . ".\\(?:\\(?:\\+\\+\\)\\|[+>]\\)")
+               (45 . ".\\(?:\\(?:-[>-]\\|<<\\|>>\\)\\|[<>}~-]\\)")
+               (46 . ".\\(?:\\(?:\\.[.<]\\)\\|[.=-]\\)")
+               (47 . ".\\(?:\\(?:\\*\\*\\|//\\|==\\)\\|[*/=>]\\)")
+               (48 . ".\\(?:x[a-zA-Z]\\)")
+               (58 . ".\\(?:::\\|[:=]\\)")
+               (59 . ".\\(?:;;\\|;\\)")
+               (60 . ".\\(?:\\(?:!--\\)\\|\\(?:~~\\|->\\|\\$>\\|\\*>\\|\\+>\\|--\\|<[<=-]\\|=[<=>]\\||>\\)\\|[*$+~/<=>|-]\\)")
+               (61 . ".\\(?:\\(?:/=\\|:=\\|<<\\|=[=>]\\|>>\\)\\|[<=>~]\\)")
+               (62 . ".\\(?:\\(?:=>\\|>[=>-]\\)\\|[=>-]\\)")
+               (63 . ".\\(?:\\(\\?\\?\\)\\|[:=?]\\)")
+               (91 . ".\\(?:]\\)")
+               (92 . ".\\(?:\\(?:\\\\\\\\\\)\\|\\\\\\)")
+               (94 . ".\\(?:=\\)")
+               (119 . ".\\(?:ww\\)")
+               (123 . ".\\(?:-\\)")
+               (124 . ".\\(?:\\(?:|[=|]\\)\\|[=>|]\\)")
+               (126 . ".\\(?:~>\\|~~\\|[>=@~-]\\)")
+               )
+             ))
+  (dolist (char-regexp alist)
+    (set-char-table-range composition-function-table (car char-regexp)
+                          `([,(cdr char-regexp) 0 font-shape-gstring]))))
+
+#+end_src
+
+*** org-bullets
+
+just a splash of eye candy. It's rare to find. 
+
+#+begin_src emacs-lisp :tangle yes
+(use-package org-bullets
+  :ensure t
+  :config (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+  )
+#+end_src
+*** Rainbow delimiters
+
+Ever had so many parentheses that you could barely orient yourself
+around? No more. Now each matching set of parentheses has the same
+colour while each non-matching has different. 
+
+#+begin_src emacs-lisp :tangle yes
+(use-package rainbow-delimiters
+  :ensure t 
+  :commands rainbow-delimiters-mode
+  :init
+  (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
+  (add-hook 'LaTex-mode-hook #'rainbow-delimiters-mode)
+  (add-hook 'org-mode-hook 'rainbow-delimiters-mode)
+  )
+#+end_src
+*** FLy- check and spell
+
+The two linters and spellcheckers for emacs. It goes without saying
+that knowing that you have a missing semicolon is good to know before
+you start a long and tedious compile. 
+
+#+begin_src emacs-lisp :tangle yes
+(use-package flycheck
+  :ensure t
+  :defer t
+  :commands (flycheck-mode)
+  :init
+  (progn
+    (eval-after-load 'flycheck '(setq flycheck-checkers (delq 'emacs-lisp-checkdoc flycheck-checkers)))
+    (add-hook 'prog-mode-hook 'flycheck-mode)
+    (add-hook 'text-mode-hook 'flycheck-mode)
+    )
+  )
+
+(use-package flyspell
+  :ensure t
+  :defer t
+  :init
+  (progn
+    (setq-default ispell-program-name "aspell")
+    (setq-default ispell-extra-args '("--sug-mode=fast"))
+    (setq-default ispell-dictionary "english")
+    (add-hook 'markdown-mode-hook '(lambda () (flyspell-mode 1)))
+    (add-hook 'text-mode-hook '(lambda () (flyspell-mode 1))))
+  :config
+  )
+
+#+end_src
+(use-package ido-completing-read+
+  :ensure t
+  :config (ido-ubiquitous-mode)
+  )
+
+*** Expand Region
+
+This extends the marked region based on logic and syntax. For example
+you can highlight up to word, sentence, include delimiters and all up
+to a sexp. 
+
+#+begin_src emacs-lisp :tangle yes
+(use-package expand-region
+  :ensure t
+  :bind ("C-v" . er/expand-region)
+  :bind ("C-S-v" . /er/contract-region)
+  )
+#+end_src
+
+*** Notifications
+This is a useful package just for kicks. See this tutorial [[https://justinsboringpage.blogspot.co.uk/2014/05/sending-notifications-from-emacs.html][here]]. 
+
+#+begin_src bash :tangle no
+  brew install terminal-notifier
+#+end_src
+
+Then add this code snippet 
+
+#+begin_src emacs-lisp :tangle yes
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; notifier 
+  ;; requires 'sudo gem install terminal-notifier'
+  ;; stolen from erc-notifier
+
+  (defvar terminal-notifier-command
+    (executable-find "terminal-notifier")
+    "The path to terminal-notifier."
+    )
+  ((lambda () terminal-notifier-command))
+  ;; Some of my own modifications
+  (defvar window
+    (if (boundp 'aquamacs-version) "org.gnu.Aquamacs" "org.gnu.Emacs") "The window to activate on clicking")
+  (defvar message-title
+    (if (boundp 'aquamacs-version) "Aquamacs" "Emacs") "the title of notifications")
+  ;;Check if we're running Emacs or Aquamacs.
+  (defvar icon
+    (if (boundp 'aquamacs-version)
+	"/Applications/Aquamacs.app/Contents/Resources/Aquamacs.icns" "https://www.gnu.org/software/emacs/images/emacs.png")
+    )
+
+
+  (defun terminal-notifier-notify (title message)
+    "Show a message with `terminal-notifier-command`."
+    (start-process "terminal-notifier"
+		   "*terminal-notifier*"
+		   terminal-notifier-command
+		   "-title" title
+		   "-message" message
+		   "-activate" window
+		   "-sound" "default"
+		   "-appIcon" icon
+		   )
+    )
+
+
+
+  (defun timed-notification(time message)
+    (interactive
+     "sNotify when (e.g: 2 minutes, 60 seconds, 3 days): \nsMessage: ")
+    (run-at-time time nil
+		 (lambda (msg) (terminal-notifier-notify message-title msg)) message)
+    )
+
+
+#+end_src
+
+then use the interactive function timed-notification, to see a timed notificaton. 
+
+I've taken the liberty of adding the `-appIcon` parameter, and making it set a distinction between emacs and aquamacs.  
+
+Another solution if you can't install terminal notifier is this
+function here. Sadly it can't change the notification's icon. 
+
+*** Alert
+
+Alert is a useful package that is used by many others
+
+#+begin_src emacs-lisp :tangle yes
+  (use-package alert
+    :defer t
+    :config
+    (alert-add-rule :mode     'org-mode
+		    :category "random-todo"
+		    :style 'notifier
+		    :continue t)
+    (alert-add-rule :mode 'org-mode
+		    :category "org-alert"
+		    :style 'notifier
+		    :continue t)
+		    )
+
+#+end_src
+
+*** Notify.el
+
+#+begin_src emacs-lisp :tangle no 
+  (defvar notify-defaults (list :app "Emacs" :icon "emacs" :timeout 5000
+				:urgency "low"
+				:category "emacs.message")
+    "Notification settings' defaults.
+  May be overridden with key-value additional arguments to `notify'.")
+  (defvar notify-delay '(0 5 0)
+    "Minimum time allowed between notifications in time format.")
+  (defvar notify-last-notification '(0 0 0) "Time of last notification.")
+  (defvar notify-method nil "Notification method among
+  'notify-via-dbus, 'notify-via-libnotify, 'notify-via-message or
+  'notify-via-growl")
+
+  ;; determine notification method unless already set
+  ;; prefer growl > D-Bus > libnotify > message
+  (cond
+   ((null notify-method)
+    (setq notify-method
+	  (cond
+	  ((executable-find "growlnotify") 'notify-via-growl)
+	   ((and (require 'dbus nil t)
+		 (dbus-ping :session "org.freedesktop.Notifications"))
+	    (defvar notify-id 0 "Current D-Bus notification id.")
+	    'notify-via-dbus)
+	   ((executable-find "notify-send") 'notify-via-libnotify)
+	   (t 'notify-via-message))))
+   ((eq notify-method 'notify-via-dbus) ;housekeeping for pre-chosen DBus
+    (if (and (require 'dbus nil t)
+	     (dbus-ping :session "org.freedesktop.Notifications"))
+	(defvar notify-id 0 "Current D-Bus notification id.")
+      (setq notify-method (if (executable-find "notify-send")
+			      'notify-via-libnotify
+			    'notify-via-message))))
+   ((and (eq notify-method 'notify-via-libnotify)
+	 (not (executable-find "notify-send"))) ;housekeeping for pre-chosen libnotify
+    (setq notify-method
+	  (if (and (require 'dbus nil t)
+		   (dbus-ping :session "org.freedesktop.Notifications"))
+	      (progn
+		(defvar notify-id 0 "Current D-Bus notification id.")
+		'notify-via-dbus)
+	    'notify-via-message)))
+   ((and (eq notify-method 'notify-via-growl)
+	 (not (executable-find "growlnotify")))
+    (setq notify-method 'notify-via-message)))
+
+  (defun notify-via-dbus (title body)
+    "Send notification with TITLE, BODY `D-Bus'."
+    (dbus-call-method :session "org.freedesktop.Notifications"
+		      "/org/freedesktop/Notifications"
+		      "org.freedesktop.Notifications" "Notify"
+		      (get 'notify-defaults :app)
+		      (setq notify-id (+ notify-id 1))
+		      (get 'notify-defaults :icon) title body '(:array)
+		      '(:array :signature "{sv}") ':int32
+		      (get 'notify-defaults :timeout)))
+
+  (defun notify-via-libnotify (title body)
+    "Notify with TITLE, BODY via `libnotify'."
+    (call-process "notify-send" nil 0 nil
+		  title body "-t"
+		  (number-to-string (get 'notify-defaults :timeout))
+		  "-i" (get 'notify-defaults :icon)
+		  "-u" (get 'notify-defaults :urgency)
+		  "-c" (get 'notify-defaults :category)))
+
+  (defun notify-via-message (title body)
+    "Notify TITLE, BODY with a simple message."
+    (message "%s: %s" title body))
+
+  (defun notify-via-growl (title body)
+    "Notify TITLE, BODY with a growl"
+    (call-process "growlnotify" nil 0 nil
+		  "-a" (get 'notify-defaults :app)
+		  "-n" (get 'notify-defaults :category)
+		  "-t" (notify-via-growl-stringify title)
+		  "-m" (notify-via-growl-stringify body)))
+
+  (defun notify-via-growl-stringify (thing)
+    (cond ((null thing) "")
+	  ((stringp thing) thing)
+	  (t (format "%s" thing))))
+
+  (defun keywords-to-properties (symbol args &optional defaults)
+    "Add to SYMBOL's property list key-values from ARGS and DEFAULTS."
+    (when (consp defaults)
+      (keywords-to-properties symbol defaults))
+    (while args
+      (put symbol (car args) (cadr args))
+      (setq args (cddr args))))
+
+
+  ;;;###autoload
+  (defun notify (title body &rest args)
+    "Notify TITLE, BODY via `notify-method'.
+  ARGS may be amongst :timeout, :icon, :urgency, :app and :category."
+    (when (time-less-p notify-delay
+		       (time-since notify-last-notification))
+      (or (eq notify-method 'notify-via-message)
+	  (keywords-to-properties 'notify-defaults args
+				  notify-defaults))
+      (setq notify-last-notification (current-time))
+      (funcall notify-method title body)))
+
+  (provide 'notify)
+
+  ;;; notify.el ends here
+#+end_src
+*** TODO.org management
+
+For one I'd like to quickly add tasks to 
+#+begin_src emacs-lisp :tangle yes
+  (defvar quick-todo-file "~/Dropbox/org-notes/todo.org" "docstring")
+  (defun quick-todo ()
+    "Quickly jot down a todo"
+    (interactive)				
+
+    (progn 
+      (find-file quick-todo-file)
+      (org-insert-todo-heading nil)
+    )
+    )
+  
+#+end_src
+
+
+*** TODO org-alert
+
+A relatively crude solution is to use org-random-todo
+
+#+begin_src emacs-lisp :tangle no
+  (use-package org-random-todo
+    :ensure t
+    :after org
+    :commands (org-random-todo-mode org-random-todo)
+    :config
+    (setq org-random-todo-how-often 1500)
+    (org-random-todo-mode 1))
+
+#+end_src
+
+But a much better solution is org-todo. 
+
+#+begin_src emacs-lisp :tangle yes
+  (use-package org-alert
+    :ensure t
+    :config
+    (setq ))
+#+end_src
+
+
+
+* Languages 
+** Markup
+*** LaTeX
+
+cdlatex helps when you edit in org mode. It's useful when used with AuCTeX
+
+#+begin_src emacs-lisp :tangle yes
+(use-package cdlatex
+  :ensure t
+)
+#+end_src
+
+AuCTeX is what does most of the heavy lifting. It has plenty of fnctions to help out with latex input. 
+
+#+begin_src emacs-lisp :tangle yes
+(use-package tex
+  :defer t
+  :ensure auctex
+  :config
+  (setq TeX-auto-save t)
+  )
+#+end_src
+
+** Interpreted
+*** Python
+
+* Keybindings
+** Core
+
+A useful binding to edit elisp fragments in a separate buffer. This helps writing this doc immensely
+
+Remember `C-c '.`
+
+I Also like to have the ability to comment and uncomment blocks of
+text on a whim. 
+#+begin_src emacs-lisp :tangle yes
+(global-set-key (kbd "C-M-;") 'comment-region-or-line )
+(global-set-key (kbd "C-M-:") 'uncomment-region-or-line )
+#+end_src
+
+Also, if you have a uk keyboard layout, you might want to do this 
+
+#+begin_src emacs-lisp :tangle yes
+(custom-set-variables '(emulate-mac-british-keyboard-mode t))
+#+end_src
+
+** Packages
+
+*** Smartparens
+
+Smartparens offers the `sp-backward-unwrap-sexp` which conflicts with the default behaviour of `m-backspace` 
+
+#+begin_src emacs-lisp :tangle yes
+  (define-key smartparens-mode-map (kbd "M-<backspace>") 'sp-backward-kill-sexp)
+  (define-key smartparens-mode-map (kbd "M-<delete>") 'sp-forward-kill-sexp)
+  (message "this got executed")
+#+end_src
+
+Remember the function we made to quickly jot down a todo. Let's add
+some spice to it. 
+
+#+begin_src emacs-lisp :tangle yes
+  (global-set-key (kbd "C-x t") 'quick-todo)
+#+end_src

@@ -1,0 +1,6 @@
+# name : ket
+# key : ket
+# binding : C-` > 
+# contributor : 
+# --
+| ${1:`yas-selected-text`} \rangle

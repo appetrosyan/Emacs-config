@@ -1,0 +1,73 @@
+
+;; ----- smex-history -----
+(
+ sp-up-sexp
+ org-mode
+ org-bullets-mode
+ lisp-mode
+ jedi:install-server
+ wc-mode
+ turn-on-smartparens-mode
+)
+
+;; ----- smex-data -----
+(
+ (LaTeX-mode . 12)
+ (LaTeX-math-mode . 13)
+ (idle-highlight-mode . 2)
+ (compile . 1)
+ (org-cdlatex-mode . 3)
+ (cdlatex-mode . 1)
+ (blink-matching-open . 1)
+ (upcase-dwim . 26)
+ (org-todo . 4)
+ (LaTeX-math-in . 1)
+ (yas-insert-snippet . 4)
+ (LaTeX-math-Box . 1)
+ (menu-bar-mode . 2)
+ (LaTeX-math-ddot . 1)
+ (LaTeX-math-partial . 14)
+ (LaTeX-math-doteqdot . 1)
+ (LaTeX-math-dot . 3)
+ (LaTeX-math-vec . 1)
+ (LaTeX-math-hat . 1)
+ (LaTeX-math-uproot . 1)
+ (LaTeX-math-sqrt . 10)
+ (python-mode . 5)
+ (prettify-symbols-mode . 1)
+ (recentf-open-most-recent-file . 1)
+ (recentf-open-most-recent-file-1 . 1)
+ (recentf-open-most-recent-file-3 . 1)
+ (recentf-open-files . 1)
+ (recentf-mode . 2)
+ (recentf-load-list . 1)
+ (recentf-edit-list . 1)
+ (Python3 . 1)
+ (jedi-mode . 4)
+ (jedi:install-server . 11)
+ (jedi:setup . 1)
+ (exec-path-from-shell-initialize . 1)
+ (py-execute-def-python3 . 3)
+ (py-execute-file-python3 . 1)
+ (elpy-menu . 1)
+ (elpy-mode . 1)
+ (ipython-send-and-indent . 2)
+ (ipython-complete . 2)
+ (force-py-shell-name-p-on . 1)
+ (emacs-lisp-mode . 1)
+ (org-ref . 1)
+ (org-ref-help . 1)
+ (yas-expand . 2)
+ (company-complete . 1)
+ (company-complete-number . 1)
+ (sudo-save . 1)
+ (python . 1)
+ (show-smartparens-global-mode . 1)
+ (smartparens-mode . 6)
+ (turn-on-smartparens-mode . 1)
+ (wc-mode . 1)
+ (lisp-mode . 1)
+ (org-bullets-mode . 1)
+ (org-mode . 2)
+ (sp-up-sexp . 2)
+)

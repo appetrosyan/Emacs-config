@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: exp
+# key: exp
+# binding: C-` e
+# --
+\exp \left[ ${1:`yas-selected-text`} \right] $0

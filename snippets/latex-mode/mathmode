@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: mathmode
+# key: mathmode
+# binding: C-` m
+# --
+[$$] $1 [/$$] $0

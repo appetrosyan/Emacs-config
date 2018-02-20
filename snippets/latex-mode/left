@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: left
+# key: l9
+# binding: C-` C-{
+# --
+\left( `yas-selected-text`$1 \right) $0
