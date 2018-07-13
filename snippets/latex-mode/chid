@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: chid
+# key: chid
+# --
+\hat{\chi}^{\dagger}_{$1, +}

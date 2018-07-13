@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: sumBZ
+# key: sumBZ
+# --
+\sum_{k \in \Lambda^{$1*}_{BZ}}$0

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: ofstream
+# key: ofs
+# --
+`(progn (goto-char (point-min)) (unless (re-search-forward
+"^using\\s-+namespace std;" nil 'no-errer) "std::"))
+`ofstream ${1:out}("${2:fielname.ext}");

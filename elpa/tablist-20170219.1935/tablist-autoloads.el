@@ -3,7 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
-;;;### (autoloads nil "tablist" "tablist.el" (23173 20845 46459 139000))
+;;;### (autoloads nil "tablist" "tablist.el" (23216 52311 535037
+;;;;;;  579000))
 ;;; Generated autoloads from tablist.el
 
 (autoload 'tablist-minor-mode "tablist" "\
@@ -23,7 +24,7 @@ the mode if ARG is omitted or nil, and toggle it if ARG is `toggle'.
 ;;;***
 
 ;;;### (autoloads nil nil ("tablist-filter.el" "tablist-pkg.el")
-;;;;;;  (23173 20845 30905 457000))
+;;;;;;  (23216 52311 533941 878000))
 
 ;;;***
 

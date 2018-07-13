@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: sums
+# key: sums
+# --
+\sum_{\sigma = \uparrow, \downarrow}

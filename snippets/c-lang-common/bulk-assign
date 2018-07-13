@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: bulk-assign
+# key: ]={
+# --
+] = {
+  $1,
+  $2	
+};$0

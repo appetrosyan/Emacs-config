@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# name: accumulate
+# key: acl
+# --
+auto sum = `(progn (goto-char (point-min)) (unless (re-search-forward
+"^using\\s-+namespace std;" nil 'no-errer) "std::"))
+`accumulate(`(progn (goto-char (point-min)) (unless (re-search-forward
+"^using\\s-+namespace std;" nil 'no-errer) "std::"))
+`begin(${1:container}), `(progn (goto-char (point-min)) (unless (re-search-forward
+"^using\\s-+namespace std;" nil 'no-errer) "std::"))
+`end($1), 0, [](int total, $2) {
+  $3
+});
+$0

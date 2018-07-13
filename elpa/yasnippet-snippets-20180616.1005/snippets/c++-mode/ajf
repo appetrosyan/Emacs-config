@@ -1,0 +1,17 @@
+# -*- mode: snippet -*-
+# name: adjacent_find
+# key: ajf
+# --
+auto pos = `(progn (goto-char (point-min)) (unless (re-search-forward
+"^using\\s-+namespace std;" nil 'no-errer) "std::"))
+`adjacent_find(`(progn (goto-char (point-min)) (unless (re-search-forward
+"^using\\s-+namespace std;" nil 'no-errer) "std::"))
+`begin(${1:container}), `(progn (goto-char (point-min)) (unless (re-search-forward
+"^using\\s-+namespace std;" nil 'no-errer) "std::"))
+`end($1));
+if (pos != `(progn (goto-char (point-min)) (unless (re-search-forward
+"^using\\s-+namespace std;" nil 'no-errer) "std::"))
+`end($1)) {
+  $2
+}
+$0

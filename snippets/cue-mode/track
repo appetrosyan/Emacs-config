@@ -1,0 +1,8 @@
+# -*- mode: cue-mode -*-
+# name: track
+# key: tr
+# --
+TRACK ${1:01} AUDIO
+	TITLE "$2"$>
+	INDEX 00 ${3:00}:${4:00}:${5:00}$>
+$0

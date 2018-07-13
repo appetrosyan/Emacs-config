@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
-;;;### (autoloads nil "biblio-arxiv" "biblio-arxiv.el" (23173 20855
-;;;;;;  834821 390000))
+;;;### (autoloads nil "biblio-arxiv" "biblio-arxiv.el" (23216 52320
+;;;;;;  129394 58000))
 ;;; Generated autoloads from biblio-arxiv.el
 
 (autoload 'biblio-arxiv-backend "biblio-arxiv" "\
@@ -24,8 +24,8 @@ Start an arXiv search for QUERY, prompting if needed.
 
 ;;;***
 
-;;;### (autoloads nil "biblio-crossref" "biblio-crossref.el" (23173
-;;;;;;  20855 876146 665000))
+;;;### (autoloads nil "biblio-crossref" "biblio-crossref.el" (23216
+;;;;;;  52320 132024 900000))
 ;;; Generated autoloads from biblio-crossref.el
 
 (autoload 'biblio-crossref-backend "biblio-crossref" "\
@@ -45,8 +45,8 @@ Start a CrossRef search for QUERY, prompting if needed.
 
 ;;;***
 
-;;;### (autoloads nil "biblio-dblp" "biblio-dblp.el" (23173 20855
-;;;;;;  888340 213000))
+;;;### (autoloads nil "biblio-dblp" "biblio-dblp.el" (23216 52320
+;;;;;;  132697 964000))
 ;;; Generated autoloads from biblio-dblp.el
 
 (autoload 'biblio-dblp-backend "biblio-dblp" "\
@@ -66,8 +66,8 @@ Start a DBLP search for QUERY, prompting if needed.
 
 ;;;***
 
-;;;### (autoloads nil "biblio-dissemin" "biblio-dissemin.el" (23173
-;;;;;;  20855 925099 786000))
+;;;### (autoloads nil "biblio-dissemin" "biblio-dissemin.el" (23216
+;;;;;;  52320 135180 502000))
 ;;; Generated autoloads from biblio-dissemin.el
 
 (autoload 'biblio-dissemin-lookup "biblio-dissemin" "\
@@ -88,8 +88,8 @@ Add Dissemin to list of `biblio-selection-mode' actions.
 
 ;;;***
 
-;;;### (autoloads nil "biblio-doi" "biblio-doi.el" (23173 20855 862134
-;;;;;;  373000))
+;;;### (autoloads nil "biblio-doi" "biblio-doi.el" (23216 52320 131013
+;;;;;;  665000))
 ;;; Generated autoloads from biblio-doi.el
 
 (autoload 'doi-insert-bibtex "biblio-doi" "\
@@ -99,8 +99,8 @@ Insert BibTeX entry matching DOI.
 
 ;;;***
 
-;;;### (autoloads nil "biblio-download" "biblio-download.el" (23173
-;;;;;;  20855 900510 521000))
+;;;### (autoloads nil "biblio-download" "biblio-download.el" (23216
+;;;;;;  52320 133384 261000))
 ;;; Generated autoloads from biblio-download.el
 
 (autoload 'biblio-download--register-action "biblio-download" "\
@@ -112,8 +112,8 @@ Add download to list of `biblio-selection-mode' actions.
 
 ;;;***
 
-;;;### (autoloads nil "biblio-hal" "biblio-hal.el" (23173 20855 849201
-;;;;;;  521000))
+;;;### (autoloads nil "biblio-hal" "biblio-hal.el" (23216 52320 130066
+;;;;;;  777000))
 ;;; Generated autoloads from biblio-hal.el
 
 (autoload 'biblio-hal-backend "biblio-hal" "\
@@ -133,8 +133,8 @@ Start a HAL search for QUERY, prompting if needed.
 
 ;;;***
 
-;;;### (autoloads nil nil ("biblio-pkg.el" "biblio.el") (23173 20855
-;;;;;;  912855 215000))
+;;;### (autoloads nil nil ("biblio-pkg.el" "biblio.el") (23216 52320
+;;;;;;  134308 158000))
 
 ;;;***
 

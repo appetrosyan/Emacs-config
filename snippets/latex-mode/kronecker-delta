@@ -1,0 +1,4 @@
+# key: \delta
+# name: kronecker-delta
+# --
+\delta_{$1, $1'}

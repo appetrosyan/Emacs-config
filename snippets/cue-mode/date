@@ -1,0 +1,8 @@
+# -*- mode: cue-mode -*-
+# name: header
+# key: head
+# --
+REM GENRE ${1:Soundtrack}
+REM DATE $2
+FILE "$3" WAVE
+     $0

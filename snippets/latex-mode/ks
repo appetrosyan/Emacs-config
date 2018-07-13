@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: ks
+# key: ks
+# --
+_{${1:k}, ${2:\sigma}}

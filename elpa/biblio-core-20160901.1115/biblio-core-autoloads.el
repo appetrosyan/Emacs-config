@@ -3,8 +3,8 @@
 ;;; Code:
 (add-to-list 'load-path (directory-file-name (or (file-name-directory #$) (car load-path))))
 
-;;;### (autoloads nil "biblio-core" "biblio-core.el" (23173 20855
-;;;;;;  207347 660000))
+;;;### (autoloads nil "biblio-core" "biblio-core.el" (23216 52319
+;;;;;;  726166 483000))
 ;;; Generated autoloads from biblio-core.el
 
 (autoload 'biblio-lookup "biblio-core" "\

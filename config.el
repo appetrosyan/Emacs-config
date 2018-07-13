@@ -1,3 +1,44 @@
+;; these functions are useful. activate them.
+(put 'downcase-region 'disabled nil)
+(put 'upcase-region 'disabled nil)
+(put 'narrow-to-region 'disabled nil)
+(put 'dired-find-alternate-file 'disabled nil)
+
+(defalias 'yes-or-no-p 'y-or-n-p)
+
+;; (setq org-src-fontify-natively t)
+  (custom-set-variables
+   '(org-fontify-natively t)
+   )
+
+(setq split-height-threshold nil)
+(setq split-width-threshold 0)
+
+(defun todo()
+(interactive)
+(find-file "/Users/app/Dropbox/org-notes/todo.org")
+)
+
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(eval-when-compile
+  (require 'use-package))
+(use-package diminish
+  :ensure t
+  )
+(use-package bind-key
+  :ensure t
+  )
+
+(use-package use-package-ensure-system-package
+  :ensure t
+  )
+
+(use-package org
+  :ensure org-plus-contrib)
+
 (use-package org-ref
   :ensure t)
 
@@ -15,39 +56,45 @@
   :ensure t
   :commands company-mode
   :init
-  ;(add-hook 'prog-mode-hook 'company-mode) 
-  ;(add-hook 'LaTeX-mode-hook 'company-mode)
-  ;(add-hook 'org-mode-hook 'company-mode)
+  (add-hook 'prog-mode-hook 'company-mode) 
+  (add-hook 'LaTeX-mode-hook 'company-mode)
+  (add-hook 'org-mode-hook 'company-mode)
   :config
  (custom-set-variables
- '(company-idle-delay .1)
+ '(company-idle-delay .5)
  '(company-show-numbers t)
- '(company-echo-delay 0)
+ '(company-echo-delay 1)
  '(company-minimum-prefix-length 2)
  '(company-selection-wrap-around t)
  '(company-transformers '(company-sort-by-occurrence company-sort-by-backend-importance ))
 )
-  (delete 'company-capf company-backends)
   :bind ("M-<Space>" . company-complete-common)
   )
 
 (use-package company-quickhelp
   :ensure t
   :defer t
-  :init (add-hook 'global-company-mode-hook #'company-quickhelp-mode)
+  :hook global-company-mode
+  ;; :init (add-hook 'global-company-mode-hook #'company-quickhelp-mode)
   )
+
+(define-key global-map (kbd "C-.") 'company-files)
 
 (use-package smartparens
   :ensure t
   :diminish smartparens-mode
   :init
   (smartparens-global-mode)
+  :hook eval-expression-minibuffer-setup
   :bind 
   ("M-<backspace>". sp-backward-kill-sexp)
   ("M-<delete>". sp-forward-kill-sexp)
+  ("M-[" . sp-backward-slurp-sexp)
+  ("M-]" . sp-forward-slurp-sexp)
+  ("M-S-[" . sp-backward-barf-sexp)
+  ("M-S-]" . sp-forward-barf-sexp)
   :config
   (require 'smartparens-config)
-  (add-hook 'eval-expression-minibuffer-setup-hook #'smartparens-mode)
   ;; markdown
   (defun sp--markdown-skip-asterisk (ms mb me)
     (save-excursion
@@ -78,6 +125,22 @@
     (sp-local-pair "=" "=" :unless '(sp-point-after-word-p sp--org-inside-LaTeX))
     (sp-local-pair "\\[" "\\]")))
 
+(use-package dired-ranger
+  :ensure t
+  :config
+  (setq dired-ranger-copy-ring-size 1)
+    (define-key dired-mode-map (kbd "C-w")
+        (lambda ()
+            (interactive)
+            (dired-ranger-copy nil) ; t adds item to dired-ranger-copy-ring
+            (define-key dired-mode-map (kbd "C-y") 'dired-ranger-move)))
+    (define-key dired-mode-map (kbd "M-w")
+        (lambda ()
+            (interactive)
+            (dired-ranger-copy nil)
+            (define-key dired-mode-map (kbd "C-y") 'dired-ranger-paste)))
+)
+
 (use-package multiple-cursors
   :ensure t
   :bind(
@@ -88,6 +151,10 @@
 	)
   )
 
+(use-package clang-format
+  :ensure t
+  )
+
 (defun sudo-save ()
   (interactive)
   (if (not buffer-file-name)
@@ -95,6 +162,10 @@
     (write-file (concat "/sudo:root@localhost:" buffer-file-name))
     )
   )
+
+(use-package tramp
+	:ensure t
+)
 
 (use-package magit
   :ensure t
@@ -108,14 +179,6 @@
   :ensure t
   :config (ido-ubiquitous-mode)
   )
-
-(use-package flx-ido
-   :ensure t
-   :config
-   (flx-ido-mode 1)
-   (setq ido-enable-flex-matching 1)
-   (setq ido-use-faces nil)
-)
 
 (use-package latex-pretty-symbols
   :ensure t
@@ -164,41 +227,9 @@
    )
  )
 
-;; FiraCode support 
-(when (window-system)
-  (set-frame-font "Fira Code"))
-(let ((alist '((33 . ".\\(?:\\(?:==\\|!!\\)\\|[!=]\\)")
-               (35 . ".\\(?:###\\|##\\|_(\\|[#(?[_{]\\)")
-               (36 . ".\\(?:>\\)")
-               (37 . ".\\(?:\\(?:%%\\)\\|%\\)")
-               (38 . ".\\(?:\\(?:&&\\)\\|&\\)")
-               (42 . ".\\(?:\\(?:\\*\\*/\\)\\|\\(?:\\*[*/]\\)\\|[*/>]\\)")
-               (43 . ".\\(?:\\(?:\\+\\+\\)\\|[+>]\\)")
-               (45 . ".\\(?:\\(?:-[>-]\\|<<\\|>>\\)\\|[<>}~-]\\)")
-               (46 . ".\\(?:\\(?:\\.[.<]\\)\\|[.=-]\\)")
-               (47 . ".\\(?:\\(?:\\*\\*\\|//\\|==\\)\\|[*/=>]\\)")
-               (48 . ".\\(?:x[a-zA-Z]\\)")
-               (58 . ".\\(?:::\\|[:=]\\)")
-               (59 . ".\\(?:;;\\|;\\)")
-               (60 . ".\\(?:\\(?:!--\\)\\|\\(?:~~\\|->\\|\\$>\\|\\*>\\|\\+>\\|--\\|<[<=-]\\|=[<=>]\\||>\\)\\|[*$+~/<=>|-]\\)")
-               (61 . ".\\(?:\\(?:/=\\|:=\\|<<\\|=[=>]\\|>>\\)\\|[<=>~]\\)")
-               (62 . ".\\(?:\\(?:=>\\|>[=>-]\\)\\|[=>-]\\)")
-               (63 . ".\\(?:\\(\\?\\?\\)\\|[:=?]\\)")
-               (91 . ".\\(?:]\\)")
-               (92 . ".\\(?:\\(?:\\\\\\\\\\)\\|\\\\\\)")
-               (94 . ".\\(?:=\\)")
-               (119 . ".\\(?:ww\\)")
-               (123 . ".\\(?:-\\)")
-               (124 . ".\\(?:\\(?:|[=|]\\)\\|[=>|]\\)")
-               (126 . ".\\(?:~>\\|~~\\|[>=@~-]\\)")
-               )
-             ))
-  (dolist (char-regexp alist)
-    (set-char-table-range composition-function-table (car char-regexp)
-                          `([,(cdr char-regexp) 0 font-shape-gstring]))))
-
 (use-package org-bullets
   :ensure t
+  ;:hook (org-mode . lambda () (org-bullets-mode 1))
   :config (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
   )
 
@@ -213,14 +244,10 @@
 
 (use-package flycheck
   :ensure t
-  :defer t
-  :commands (flycheck-mode)
-  :init
-  (progn
-    (eval-after-load 'flycheck '(setq flycheck-checkers (delq 'emacs-lisp-checkdoc flycheck-checkers)))
-    (add-hook 'prog-mode-hook 'flycheck-mode)
-    (add-hook 'text-mode-hook 'flycheck-mode)
-    )
+  :config (progn (add-hook 'after-init-hook #'global-flycheck-mode)
+		 (add-hook 'python-mode-hook (lambda ()
+					       (flycheck-select-checker 'python-pylint)))
+		 )
   )
 
 (use-package flyspell
@@ -242,63 +269,6 @@
   :bind ("C-S-v" . /er/contract-region)
   )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; notifier 
-;; requires 'sudo gem install terminal-notifier'
-;; stolen from erc-notifier
-
-(defvar terminal-notifier-command
-  (executable-find "terminal-notifier")
-  "The path to terminal-notifier."
-  )
-((lambda () terminal-notifier-command))
-;; Some of my own modifications
-(defvar window
-  (if (boundp 'aquamacs-version) "org.gnu.Aquamacs" "org.gnu.Emacs") "The window to activate on clicking")
-(defvar message-title
-  (if (boundp 'aquamacs-version) "Aquamacs" "Emacs") "the title of notifications")
-;;Check if we're running Emacs or Aquamacs.
-(defvar icon
-  (if (boundp 'aquamacs-version)
-      "/Applications/Aquamacs.app/Contents/Resources/Aquamacs.icns" "https://www.gnu.org/software/emacs/images/emacs.png")
-  )
-
-
-(defun terminal-notifier-notify (title message)
-  "Show a message with `terminal-notifier-command`."
-  (start-process "terminal-notifier"
-		 "*terminal-notifier*"
-		 terminal-notifier-command
-		 "-title" title
-		 "-message" message
-		 "-activate" window
-		 "-sound" "default"
-		 "-appIcon" icon
-		 )
-  )
-
-
-
-(defun timed-notification(time message)
-  (interactive
-   "sNotify when (e.g: 2 minutes, 60 seconds, 3 days): \nsMessage: ")
-  (run-at-time time nil
-	       (lambda (msg) (terminal-notifier-notify message-title msg)) message)
-  )
-
-(use-package alert
-  :defer t
-  :config
-  (alert-add-rule :mode     'org-mode
-		  :category "random-todo"
-		  :style 'notifier
-		  :continue t)
-  (alert-add-rule :mode 'org-mode
-		  :category "org-alert"
-		  :style 'notifier
-		  :continue t)
-		  )
-
 (defvar quick-todo-file "~/Dropbox/org-notes/todo.org" "docstring")
 (defun quick-todo ()
   "Quickly jot down a todo"
@@ -309,11 +279,6 @@
     (org-insert-todo-heading nil)
   )
   )
-
-(use-package org-alert
-  :ensure t
-  :config
-  (setq ))
 
 (use-package cdlatex
   :ensure t
@@ -326,6 +291,11 @@
   (setq TeX-auto-save t)
   )
 
+(use-package ox-reveal
+  :ensure t)
+(setq org-reveal-root "http://cdn.jsdelivr.net/reveal.js/3.0.0/")
+;; (setq org-reveal-mathjax t)
+
 (global-set-key (kbd "C-M-;") 'comment-region-or-line )
 (global-set-key (kbd "C-M-:") 'uncomment-region-or-line )
 
@@ -333,6 +303,5 @@
 
 (define-key smartparens-mode-map (kbd "M-<backspace>") 'sp-backward-kill-sexp)
 (define-key smartparens-mode-map (kbd "M-<delete>") 'sp-forward-kill-sexp)
-(message "this got executed")
 
 (global-set-key (kbd "C-x t") 'quick-todo)

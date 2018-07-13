@@ -1,10 +1,13 @@
-#+TITLE: Emacs main configuration and notes file
-#+AUTHOR: Alex Petrosyan
+Please note, all entries marked todo do not work properly in my configuration. Use at own risk and mind conflicts. 
+
 
 * Small tweaks
 
 ** Re-enabling functions
-   Some unfairly disabled functions
+Some very useful functions are being disabled by default. Even though
+I can understand that ther developers are trying to make this as easy
+on newcomers as they can make it, having CUA-mode disabled by default
+and having these swtiched off makes very little sense. 
 #+begin_src emacs-lisp :tangle yes
 ;; these functions are useful. activate them.
 (put 'downcase-region 'disabled nil)
@@ -37,26 +40,56 @@ Custom set variables is a powerful tool and overrides most of what you do in an 
 
 One caveat is the changed syntax, and the fact that it's less readable than `setq` for example. The good thing though, is that if in emacs for some reason something in your config file doesn't load, you know how to fix it. 
 
-#+begin_src emacs-lisp :tangle yes
-  (custom-set-variables
-   '(global-linum-mode t)
-   )
+#+begin_src emacs-lisp :tangle no
+  (custom-set-variables '(global-linum-mode t))
 #+end_src
 
-** Org mode specials
+** Splitting windows horizontally
 
-I use org mode with orgzly to manage TODO tasks. 
+   Splitting windows top/bottom is not the most brilliant idea one
+   could have had. 
+
+   Most modern code guidelines enforce a hard cap of 80 columns per
+   line, while the number of lines per file is virtually unlimited. 
+
+   So, a more sane set of defaults would be:
+   
+#+begin_src emacs-lisp :tangle yes
+(setq split-height-threshold nil)
+(setq split-width-threshold 0)
+#+end_src
+
+** TODO Open csv in latex mode
+
+   I use Anki. Org mode anki is a good thing if you're dealing with
+   complicated expressions, and you want to nail the layout. I'm
+   dealing with maths in bulk. So I use csv to export and import to
+   and fro. 
+   #+begin_src emacs-lisp :tangle no
+     (add-to-list 'auto-mode-alist '("'\\.csv\\'" . LaTeX-mode))
+   #+end_src
 
 
- 
+** Add todo
 
+   Add a todo item to my main dropbox account. 
 
+#+begin_src emacs-lisp :tangle yes
+(defun todo()
+(interactive)
+(find-file "/Users/app/Dropbox/org-notes/todo.org")
+)
+#+end_src
 * Packages
 ** Core
+The =package.el= and =use-package= are provided here for reference
+only, as I would peronsally suggest having them in your =elisp= config
+file.  
+
 *** Package.el
 The most important package to manage packages. 
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 (require 'package)
 
 (add-to-list 'package-archives
@@ -67,23 +100,32 @@ The most important package to manage packages.
         '((org-plus-contrib . "org"))))
 (package-initialize)
 #+end_src
+
+
 *** use-package
 
-#+begin_src emacs-lisp :tangle yes
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
+    Here are three extensions that you *must* use, in order for this configuration file to run. 
 
-;; From use-package README
-(eval-when-compile
-  (require 'use-package))
-(use-package diminish
-  :ensure t
-  )
-(use-package bind-key
-  :ensure t
-  )
+#+begin_src emacs-lisp :tangle yes
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+
+  (eval-when-compile
+    (require 'use-package))
+  (use-package diminish
+    :ensure t
+    )
+  (use-package bind-key
+    :ensure t
+    )
+
+  (use-package use-package-ensure-system-package
+    :ensure t
+    )
 #+end_src
+
+
 *** Org-contrib
 
 We would like to have the latest and greatest, so pull in the most
@@ -96,10 +138,11 @@ up-to-date org.
   :ensure org-plus-contrib)
 #+end_src
 
-#+begin_src emacs-lisp :tanrgle yes
+#+begin_src emacs-lisp :tangle yes
 (use-package org-ref
   :ensure t)
 #+end_src
+
 
 
 ** Time savers
@@ -120,7 +163,7 @@ up-to-date org.
 
 *** Company
 
-Company, a very powerful autocompletion system. It has a few quirks, see below, that we will need to tackle, but overall it's my second favourite time-saver. 
+Company, a very powerful autocompletion system. It has a few quirks, that we will need to tackle, but overall it's my second favourite time-saver. 
 It essentially can:
 - Complete language keywords. 
 - Terms you've already typed in.
@@ -130,19 +173,18 @@ It essentially can:
     :ensure t
     :commands company-mode
     :init
-    ;(add-hook 'prog-mode-hook 'company-mode) 
-    ;(add-hook 'LaTeX-mode-hook 'company-mode)
-    ;(add-hook 'org-mode-hook 'company-mode)
+    (add-hook 'prog-mode-hook 'company-mode) 
+    (add-hook 'LaTeX-mode-hook 'company-mode)
+    (add-hook 'org-mode-hook 'company-mode)
     :config
    (custom-set-variables
-   '(company-idle-delay .1)
+   '(company-idle-delay .5)
    '(company-show-numbers t)
-   '(company-echo-delay 0)
+   '(company-echo-delay 1)
    '(company-minimum-prefix-length 2)
    '(company-selection-wrap-around t)
    '(company-transformers '(company-sort-by-occurrence company-sort-by-backend-importance ))
   )
-    (delete 'company-capf company-backends)
     :bind ("M-<Space>" . company-complete-common)
     ) 
 
@@ -154,9 +196,30 @@ Since you sometimes do need to know what your completion does, it's useful to ha
 (use-package company-quickhelp
   :ensure t
   :defer t
-  :init (add-hook 'global-company-mode-hook #'company-quickhelp-mode)
+  :hook global-company-mode
+  ;; :init (add-hook 'global-company-mode-hook #'company-quickhelp-mode)
   )
 #+end_src
+
+#+begin_src emacs-lisp :tangle yes
+(define-key global-map (kbd "C-.") 'company-files)
+#+end_src
+
+Prevents malicious-interaction between yasnippet and company. 
+
+*** Aggressive Indent
+
+    I like to keep my project consistent, with coding standards, and a lot of them require specific amounts of indentation in specific cases. This package enforces the right indentation style regardless of what you're working on. 
+
+    #+begin_src emacs-lisp :tangle no
+  (use-package aggressive-indent-mode
+    :ensure t
+    :hook emacs-lisp-mode
+    :hook c++-mode
+  
+    )
+#+end_src 
+
 
 *** Smartparens
 
@@ -168,12 +231,16 @@ Probably the most underrted package in existence. It's a must to have when doing
     :diminish smartparens-mode
     :init
     (smartparens-global-mode)
+    :hook eval-expression-minibuffer-setup
     :bind 
     ("M-<backspace>". sp-backward-kill-sexp)
     ("M-<delete>". sp-forward-kill-sexp)
+    ("M-[" . sp-backward-slurp-sexp)
+    ("M-]" . sp-forward-slurp-sexp)
+    ("M-S-[" . sp-backward-barf-sexp)
+    ("M-S-]" . sp-forward-barf-sexp)
     :config
     (require 'smartparens-config)
-    (add-hook 'eval-expression-minibuffer-setup-hook #'smartparens-mode)
     ;; markdown
     (defun sp--markdown-skip-asterisk (ms mb me)
       (save-excursion
@@ -205,7 +272,26 @@ Probably the most underrted package in existence. It's a must to have when doing
       (sp-local-pair "\\[" "\\]")))
 #+end_src
 
+*** Ranger like dired
+This is a must, because dired was not designed with humans in mind.
 
+#+begin_src emacs-lisp :tangle yes
+(use-package dired-ranger
+  :ensure t
+  :config
+  (setq dired-ranger-copy-ring-size 1)
+    (define-key dired-mode-map (kbd "C-w")
+        (lambda ()
+            (interactive)
+            (dired-ranger-copy nil) ; t adds item to dired-ranger-copy-ring
+            (define-key dired-mode-map (kbd "C-y") 'dired-ranger-move)))
+    (define-key dired-mode-map (kbd "M-w")
+        (lambda ()
+            (interactive)
+            (dired-ranger-copy nil)
+            (define-key dired-mode-map (kbd "C-y") 'dired-ranger-paste)))
+)
+#+end_src
 *** Multiple cursors
 
 It's not as powerful or as intuitive as the macros present in vim or emacs, but it still has plenty of uses, when you, for example need to rename a symbol, etc. 
@@ -223,9 +309,23 @@ It's not as powerful or as intuitive as the macros present in vim or emacs, but 
 #+end_src
 *** Elmacro
 
-Speaking of macros, it's one of the best parts of emacs. BUt sometimes you wish that you could have carried over the macro you've recorded across sessions. Have no fear, elmacro to the rescue. 
+    Speaking of macros, it's one of the best parts of emacs. But sometimes you wish that you could have carried over the macro you've recorded across sessions. Have no fear, elmacro to the rescue. 
 
-It essentially converts keystrokes to elisp function calls, which makes writing and optimising a function, that as opposed to a keyboard macro doesn't have to be defined per each session. 
+    It essentially converts keystrokes to elisp function calls, which
+makes writing and optimising a function, that as opposed to a keyboard
+macro doesn't have to be defined per each session. 
+*** clang-format
+
+    This is an extremely useful tool to re-format c/c++/java code. In
+    most cases the default is good-enough. 
+
+#+begin_src emacs-lisp :tangle yes
+  (use-package clang-format
+    :ensure t
+    )
+#+end_src
+
+
 ** Utilities
 *** Sudo-save
 
@@ -247,7 +347,7 @@ This saves me a lot of trouble on Linux systems. Say you wanted to edit a system
 
 It's an absolute must. Lets you use ssh to connect to remote hosts and more.
 
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp :tangle yes
 (use-package tramp
 	:ensure t
 )
@@ -256,6 +356,7 @@ It's an absolute must. Lets you use ssh to connect to remote hosts and more.
 *** Expand region
 
 This package is sop
+
 *** Magit
 #+begin_src emacs-lisp :tangle yes
 
@@ -265,9 +366,11 @@ This package is sop
 
     )
 #+end_src
-The magical git integration package that saved me on more than one occasion the embarrasment of not 
+The magical git integration package that saved me on more than one
+occasion the embarrasment of not 
+
 ** User interface
-*** Helm
+*** TODO Helm
 
     I'm somewhat new to helm, but my brief brush has made me decide
     that it's not a good package. True, it has potential, but as of
@@ -324,9 +427,11 @@ completions.
   )
 #+end_src
 
-And one of the features of Helm, that I do think are useful but not present in ido, is fuzzy matching. 
+And one of the features of Helm, that I do think is useful but not
+present in ido, is fuzzy matching.Sadly it crashes ido. 
+*** TODO FLX IDO
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
    (use-package flx-ido
      :ensure t
      :config
@@ -397,11 +502,11 @@ readablke for example.
  )
 #+end_src
 
-*** Fira code
+*** TODO Fira code
 
 for ligatures. Very useful, if you ask me.
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
 ;; FiraCode support 
 (when (window-system)
   (set-frame-font "Fira Code"))
@@ -444,6 +549,7 @@ just a splash of eye candy. It's rare to find.
 #+begin_src emacs-lisp :tangle yes
 (use-package org-bullets
   :ensure t
+  ;:hook (org-mode . lambda () (org-bullets-mode 1))
   :config (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
   )
 #+end_src
@@ -470,30 +576,26 @@ that knowing that you have a missing semicolon is good to know before
 you start a long and tedious compile. 
 
 #+begin_src emacs-lisp :tangle yes
-(use-package flycheck
-  :ensure t
-  :defer t
-  :commands (flycheck-mode)
-  :init
-  (progn
-    (eval-after-load 'flycheck '(setq flycheck-checkers (delq 'emacs-lisp-checkdoc flycheck-checkers)))
-    (add-hook 'prog-mode-hook 'flycheck-mode)
-    (add-hook 'text-mode-hook 'flycheck-mode)
+  (use-package flycheck
+    :ensure t
+    :config (progn (add-hook 'after-init-hook #'global-flycheck-mode)
+		   (add-hook 'python-mode-hook (lambda ()
+						 (flycheck-select-checker 'python-pylint)))
+		   )
     )
-  )
-
-(use-package flyspell
-  :ensure t
-  :defer t
-  :init
-  (progn
-    (setq-default ispell-program-name "aspell")
-    (setq-default ispell-extra-args '("--sug-mode=fast"))
-    (setq-default ispell-dictionary "english")
-    (add-hook 'markdown-mode-hook '(lambda () (flyspell-mode 1)))
-    (add-hook 'text-mode-hook '(lambda () (flyspell-mode 1))))
-  :config
-  )
+                 
+  (use-package flyspell
+    :ensure t
+    :defer t
+    :init
+    (progn
+      (setq-default ispell-program-name "aspell")
+      (setq-default ispell-extra-args '("--sug-mode=fast"))
+      (setq-default ispell-dictionary "english")
+      (add-hook 'markdown-mode-hook '(lambda () (flyspell-mode 1)))
+      (add-hook 'text-mode-hook '(lambda () (flyspell-mode 1))))
+    :config
+    )
 
 #+end_src
 (use-package ido-completing-read+
@@ -515,7 +617,7 @@ to a sexp.
   )
 #+end_src
 
-*** Notifications
+*** TODO Notifications
 This is a useful package just for kicks. See this tutorial [[https://justinsboringpage.blogspot.co.uk/2014/05/sending-notifications-from-emacs.html][here]]. 
 
 #+begin_src bash :tangle no
@@ -524,7 +626,7 @@ This is a useful package just for kicks. See this tutorial [[https://justinsbori
 
 Then add this code snippet 
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; notifier 
   ;; requires 'sudo gem install terminal-notifier'
@@ -579,11 +681,11 @@ I've taken the liberty of adding the `-appIcon` parameter, and making it set a d
 Another solution if you can't install terminal notifier is this
 function here. Sadly it can't change the notification's icon. 
 
-*** Alert
+*** TODO Alert
 
 Alert is a useful package that is used by many others
 
-#+begin_src emacs-lisp :tangle yes
+#+begin_src emacs-lisp :tangle no
   (use-package alert
     :defer t
     :config
@@ -599,7 +701,7 @@ Alert is a useful package that is used by many others
 
 #+end_src
 
-*** Notify.el
+*** TODO Notify.el
 
 #+begin_src emacs-lisp :tangle no 
   (defvar notify-defaults (list :app "Emacs" :icon "emacs" :timeout 5000
@@ -744,14 +846,6 @@ A relatively crude solution is to use org-random-todo
 
 But a much better solution is org-todo. 
 
-#+begin_src emacs-lisp :tangle yes
-  (use-package org-alert
-    :ensure t
-    :config
-    (setq ))
-#+end_src
-
-
 
 * Languages 
 ** Markup
@@ -776,7 +870,15 @@ AuCTeX is what does most of the heavy lifting. It has plenty of fnctions to help
   )
 #+end_src
 
+*** Reveal.js
+#+begin_src emacs-lisp :tangle yes
+  (use-package ox-reveal
+    :ensure t)
+  (setq org-reveal-root "http://cdn.jsdelivr.net/reveal.js/3.0.0/")
+  ;; (setq org-reveal-mathjax t)		
+#+end_src
 ** Interpreted
+
 *** Python
 
 * Keybindings
@@ -808,7 +910,6 @@ Smartparens offers the `sp-backward-unwrap-sexp` which conflicts with the defaul
 #+begin_src emacs-lisp :tangle yes
   (define-key smartparens-mode-map (kbd "M-<backspace>") 'sp-backward-kill-sexp)
   (define-key smartparens-mode-map (kbd "M-<delete>") 'sp-forward-kill-sexp)
-  (message "this got executed")
 #+end_src
 
 Remember the function we made to quickly jot down a todo. Let's add

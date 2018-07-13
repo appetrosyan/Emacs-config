@@ -1,0 +1,14 @@
+# -*- mode: snippet -*-
+# name: for_each
+# key: fre
+# --
+`(progn (goto-char (point-min)) (unless (re-search-forward
+"^using\\s-+namespace std;" nil 'no-errer) "std::"))
+`for_each(`(progn (goto-char (point-min)) (unless (re-search-forward
+"^using\\s-+namespace std;" nil 'no-errer) "std::"))
+`begin(${1:container}), `(progn (goto-char (point-min)) (unless (re-search-forward
+"^using\\s-+namespace std;" nil 'no-errer) "std::"))
+`end($1), []($2) {
+  $3
+});
+$0
