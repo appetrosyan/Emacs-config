@@ -11,6 +11,8 @@
    '(org-fontify-natively t)
    )
 
+(custom-set-variables '(global-linum-mode t))
+
 (setq split-height-threshold nil)
 (setq split-width-threshold 0)
 
@@ -56,7 +58,7 @@
   :ensure t
   :commands company-mode
   :init
-  (add-hook 'prog-mode-hook 'company-mode) 
+  (add-hook 'prog-mode-hook 'company-mode)
   (add-hook 'LaTeX-mode-hook 'company-mode)
   (add-hook 'org-mode-hook 'company-mode)
   :config
@@ -67,7 +69,7 @@
  '(company-minimum-prefix-length 2)
  '(company-selection-wrap-around t)
  '(company-transformers '(company-sort-by-occurrence company-sort-by-backend-importance ))
-)
+ )
   :bind ("M-<Space>" . company-complete-common)
   )
 
@@ -75,7 +77,6 @@
   :ensure t
   :defer t
   :hook global-company-mode
-  ;; :init (add-hook 'global-company-mode-hook #'company-quickhelp-mode)
   )
 
 (define-key global-map (kbd "C-.") 'company-files)
@@ -83,8 +84,7 @@
 (use-package smartparens
   :ensure t
   :diminish smartparens-mode
-  :init
-  (smartparens-global-mode)
+  :init (smartparens-global-mode)
   :hook eval-expression-minibuffer-setup
   :bind 
   ("M-<backspace>". sp-backward-kill-sexp)
@@ -132,7 +132,7 @@
     (define-key dired-mode-map (kbd "C-w")
         (lambda ()
             (interactive)
-            (dired-ranger-copy nil) ; t adds item to dired-ranger-copy-ring
+            (dired-ranger-copy t)
             (define-key dired-mode-map (kbd "C-y") 'dired-ranger-move)))
     (define-key dired-mode-map (kbd "M-w")
         (lambda ()
@@ -147,7 +147,7 @@
 	("C-n". mc/mark-next-like-this)	      
 	("C-s-p" . mc/mark-previous-like-this)	  
 	("C-f". mc/mark-all-like-this)	
-	("C-<mouse-1>" . mc/add-cursor-on-click)
+	("M-<mouse-1>" . mc/add-cursor-on-click)
 	)
   )
 
@@ -164,13 +164,12 @@
   )
 
 (use-package tramp
-	:ensure t
+:ensure t
 )
 
 (use-package magit
   :ensure t
   :bind ("C-x g" . magit-status)
-
   )
 
 (ido-mode)
@@ -227,10 +226,43 @@
    )
  )
 
+;; FiraCode support 
+(when (window-system)
+  (set-frame-font "Fira Code"))
+(let ((alist '((33 . ".\\(?:\\(?:==\\|!!\\)\\|[!=]\\)")
+               (35 . ".\\(?:###\\|##\\|_(\\|[#(?[_{]\\)")
+               (36 . ".\\(?:>\\)")
+               (37 . ".\\(?:\\(?:%%\\)\\|%\\)")
+               (38 . ".\\(?:\\(?:&&\\)\\|&\\)")
+               (42 . ".\\(?:\\(?:\\*\\*/\\)\\|\\(?:\\*[*/]\\)\\|[*/>]\\)")
+               (43 . ".\\(?:\\(?:\\+\\+\\)\\|[+>]\\)")
+               (45 . ".\\(?:\\(?:-[>-]\\|<<\\|>>\\)\\|[<>}~-]\\)")
+               (46 . ".\\(?:\\(?:\\.[.<]\\)\\|[.=-]\\)")
+               (47 . ".\\(?:\\(?:\\*\\*\\|//\\|==\\)\\|[*/=>]\\)")
+               (48 . ".\\(?:x[a-zA-Z]\\)")
+               (58 . ".\\(?:::\\|[:=]\\)")
+               (59 . ".\\(?:;;\\|;\\)")
+               (60 . ".\\(?:\\(?:!--\\)\\|\\(?:~~\\|->\\|\\$>\\|\\*>\\|\\+>\\|--\\|<[<=-]\\|=[<=>]\\||>\\)\\|[*$+~/<=>|-]\\)")
+               (61 . ".\\(?:\\(?:/=\\|:=\\|<<\\|=[=>]\\|>>\\)\\|[<=>~]\\)")
+               (62 . ".\\(?:\\(?:=>\\|>[=>-]\\)\\|[=>-]\\)")
+               (63 . ".\\(?:\\(\\?\\?\\)\\|[:=?]\\)")
+               (91 . ".\\(?:]\\)")
+               (92 . ".\\(?:\\(?:\\\\\\\\\\)\\|\\\\\\)")
+               (94 . ".\\(?:=\\)")
+               (119 . ".\\(?:ww\\)")
+               (123 . ".\\(?:-\\)")
+               (124 . ".\\(?:\\(?:|[=|]\\)\\|[=>|]\\)")
+               (126 . ".\\(?:~>\\|~~\\|[>=@~-]\\)")
+               )
+             ))
+  (dolist (char-regexp alist)
+    (set-char-table-range composition-function-table (car char-regexp)
+                          `([,(cdr char-regexp) 0 font-shape-gstring]))))
+
 (use-package org-bullets
   :ensure t
-  ;:hook (org-mode . lambda () (org-bullets-mode 1))
-  :config (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+  ;;:hook (org-mode . lambda () (org-bullets-mode 1))
+  :config (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))) 
   )
 
 (use-package rainbow-delimiters
@@ -239,7 +271,7 @@
   :init
   (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
   (add-hook 'LaTex-mode-hook #'rainbow-delimiters-mode)
-  (add-hook 'org-mode-hook 'rainbow-delimiters-mode)
+  (add-hook 'org-mode-hook #'rainbow-delimiters-mode)
   )
 
 (use-package flycheck
@@ -266,7 +298,6 @@
 (use-package expand-region
   :ensure t
   :bind ("C-v" . er/expand-region)
-  :bind ("C-S-v" . /er/contract-region)
   )
 
 (defvar quick-todo-file "~/Dropbox/org-notes/todo.org" "docstring")
@@ -298,8 +329,10 @@
 
 (global-set-key (kbd "C-M-;") 'comment-region-or-line )
 (global-set-key (kbd "C-M-:") 'uncomment-region-or-line )
-
-(custom-set-variables '(emulate-mac-british-keyboard-mode t))
+(global-set-key (kbd "s-c") 'kill-ring-save)
+(global-set-key (kbd "s-v") 'yank)
+(global-set-key (kbd "s-z") 'undo)
+(global-set-key (kbd "s-s") 'save-buffer)
 
 (define-key smartparens-mode-map (kbd "M-<backspace>") 'sp-backward-kill-sexp)
 (define-key smartparens-mode-map (kbd "M-<delete>") 'sp-forward-kill-sexp)

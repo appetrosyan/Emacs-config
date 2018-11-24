@@ -173,7 +173,7 @@ It essentially can:
     :ensure t
     :commands company-mode
     :init
-    (add-hook 'prog-mode-hook 'company-mode) 
+    (add-hook 'prog-mode-hook 'company-mode)
     (add-hook 'LaTeX-mode-hook 'company-mode)
     (add-hook 'org-mode-hook 'company-mode)
     :config
@@ -186,8 +186,7 @@ It essentially can:
    '(company-transformers '(company-sort-by-occurrence company-sort-by-backend-importance ))
    )
     :bind ("M-<Space>" . company-complete-common)
-    ) 
-
+    )
 #+end_src
 
 Since you sometimes do need to know what your completion does, it's useful to have this snippet. 
@@ -357,15 +356,6 @@ The magical git integration package that saved me on more than one
 occasion the embarrasment of not 
 
 ** User interface
-*** TODO Helm
-
-    I'm somewhat new to helm, but my brief brush has made me decide
-    that it's not a good package. True, it has potential, but as of
-    now, it's poorly made, poorly maintained, and sadly not
-    particularly well thought-through. 
-
-    I still include the configuration I used, but would advise against
-    using it. 
 
 *** IDO
 
@@ -464,7 +454,7 @@ readablke for example.
 
 for ligatures. Very useful, if you ask me.
 
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp :tangle yes
 ;; FiraCode support 
 (when (window-system)
   (set-frame-font "Fira Code"))
@@ -500,6 +490,8 @@ for ligatures. Very useful, if you ask me.
 
 #+end_src
 
+
+
 *** org-bullets
 
 just a splash of eye candy. It's rare to find. 
@@ -507,8 +499,8 @@ just a splash of eye candy. It's rare to find.
 #+begin_src emacs-lisp :tangle yes
   (use-package org-bullets
     :ensure t
-    :hook (org-mode . lambda () (org-bullets-mode 1))
-    :;; config (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))) 
+    ;;:hook (org-mode . lambda () (org-bullets-mode 1))
+    :config (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))) 
     )
 #+end_src
 *** Rainbow delimiters
@@ -556,10 +548,13 @@ you start a long and tedious compile.
     )
 
 #+end_src
+
+#+being_src emacs-lisp :tangle yes
 (use-package ido-completing-read+
   :ensure t
   :config (ido-ubiquitous-mode)
   )
+#+end_src
 
 *** Expand Region
 
@@ -848,15 +843,15 @@ Remember `C-c '.`
 I Also like to have the ability to comment and uncomment blocks of
 text on a whim. 
 #+begin_src emacs-lisp :tangle yes
-(global-set-key (kbd "C-M-;") 'comment-region-or-line )
-(global-set-key (kbd "C-M-:") 'uncomment-region-or-line )
+  (global-set-key (kbd "C-M-;") 'comment-region-or-line )
+  (global-set-key (kbd "C-M-:") 'uncomment-region-or-line )
+  (global-set-key (kbd "s-c") 'kill-ring-save)
+  (global-set-key (kbd "s-v") 'yank)
+  (global-set-key (kbd "s-z") 'undo)
+  (global-set-key (kbd "s-s") 'save-buffer)
 #+end_src
 
-Also, if you have a uk keyboard layout, you might want to do this 
 
-#+begin_src emacs-lisp :tangle yes
-(custom-set-variables '(emulate-mac-british-keyboard-mode t))
-#+end_src
 
 ** Packages
 
@@ -874,4 +869,10 @@ some spice to it.
 
 #+begin_src emacs-lisp :tangle yes
   (global-set-key (kbd "C-x t") 'quick-todo)
+#+end_src
+
+#+begin_src emacs-lisp :tangle
+(if (eq system-type 'darwin)
+    (progn
+      (setq mac-option-modifier 'meta)))
 #+end_src
