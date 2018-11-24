@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: conditional compile
+# key: #id
+# --
+#ifdef ${1:USE_BOOST}
+$0
+#endif /* $1 */

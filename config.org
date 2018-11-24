@@ -40,7 +40,7 @@ Custom set variables is a powerful tool and overrides most of what you do in an 
 
 One caveat is the changed syntax, and the fact that it's less readable than `setq` for example. The good thing though, is that if in emacs for some reason something in your config file doesn't load, you know how to fix it. 
 
-#+begin_src emacs-lisp :tangle no
+#+begin_src emacs-lisp :tangle yes
   (custom-set-variables '(global-linum-mode t))
 #+end_src
 
@@ -184,7 +184,7 @@ It essentially can:
    '(company-minimum-prefix-length 2)
    '(company-selection-wrap-around t)
    '(company-transformers '(company-sort-by-occurrence company-sort-by-backend-importance ))
-  )
+   )
     :bind ("M-<Space>" . company-complete-common)
     ) 
 
@@ -197,7 +197,6 @@ Since you sometimes do need to know what your completion does, it's useful to ha
   :ensure t
   :defer t
   :hook global-company-mode
-  ;; :init (add-hook 'global-company-mode-hook #'company-quickhelp-mode)
   )
 #+end_src
 
@@ -205,22 +204,10 @@ Since you sometimes do need to know what your completion does, it's useful to ha
 (define-key global-map (kbd "C-.") 'company-files)
 #+end_src
 
+
 Prevents malicious-interaction between yasnippet and company. 
 
 *** Aggressive Indent
-
-    I like to keep my project consistent, with coding standards, and a lot of them require specific amounts of indentation in specific cases. This package enforces the right indentation style regardless of what you're working on. 
-
-    #+begin_src emacs-lisp :tangle no
-  (use-package aggressive-indent-mode
-    :ensure t
-    :hook emacs-lisp-mode
-    :hook c++-mode
-  
-    )
-#+end_src 
-
-
 *** Smartparens
 
 Probably the most underrted package in existence. It's a must to have when doing lisp and Clojure work. It allows for you to surround items with parentheses, delimiters on a whim. 
@@ -229,8 +216,7 @@ Probably the most underrted package in existence. It's a must to have when doing
   (use-package smartparens
     :ensure t
     :diminish smartparens-mode
-    :init
-    (smartparens-global-mode)
+    :init (smartparens-global-mode)
     :hook eval-expression-minibuffer-setup
     :bind 
     ("M-<backspace>". sp-backward-kill-sexp)
@@ -283,7 +269,7 @@ This is a must, because dired was not designed with humans in mind.
     (define-key dired-mode-map (kbd "C-w")
         (lambda ()
             (interactive)
-            (dired-ranger-copy nil) ; t adds item to dired-ranger-copy-ring
+            (dired-ranger-copy t)
             (define-key dired-mode-map (kbd "C-y") 'dired-ranger-move)))
     (define-key dired-mode-map (kbd "M-w")
         (lambda ()
@@ -303,17 +289,19 @@ It's not as powerful or as intuitive as the macros present in vim or emacs, but 
 	("C-n". mc/mark-next-like-this)	      
 	("C-s-p" . mc/mark-previous-like-this)	  
 	("C-f". mc/mark-all-like-this)	
-	("C-<mouse-1>" . mc/add-cursor-on-click)
+	("M-<mouse-1>" . mc/add-cursor-on-click)
 	)
   )
 #+end_src
 *** Elmacro
 
-    Speaking of macros, it's one of the best parts of emacs. But sometimes you wish that you could have carried over the macro you've recorded across sessions. Have no fear, elmacro to the rescue. 
+    Speaking of macros, it's one of the best parts of emacs. But
+    sometimes wish that you could have carried over the macro you've
+    recorded across sessions. Have no fear, elmacro to the rescue. 
 
     It essentially converts keystrokes to elisp function calls, which
-makes writing and optimising a function, that as opposed to a keyboard
-macro doesn't have to be defined per each session. 
+    makes writing and optimising a function, that as opposed to a keyboard
+    macro doesn't have to be defined per each session. 
 *** clang-format
 
     This is an extremely useful tool to re-format c/c++/java code. In
@@ -349,7 +337,7 @@ It's an absolute must. Lets you use ssh to connect to remote hosts and more.
 
 #+begin_src emacs-lisp :tangle yes
 (use-package tramp
-	:ensure t
+:ensure t
 )
 #+end_src
 
@@ -363,7 +351,6 @@ This package is sop
   (use-package magit
     :ensure t
     :bind ("C-x g" . magit-status)
-
     )
 #+end_src
 The magical git integration package that saved me on more than one
@@ -380,35 +367,6 @@ occasion the embarrasment of not
     I still include the configuration I used, but would advise against
     using it. 
 
-#+begin_src emacs-lisp :tangle no
-(use-package helm
-  :ensure t
-  :diminish helm-mode
-  :init (progn
-          (require 'helm-config)
-          (use-package helm-projectile
-            :ensure t
-            :commands helm-projectile
-            :bind ("C-c p h" . helm-projectile))
-          (use-package helm-ag :defer 10  :ensure t)
-          (setq helm-locate-command "mdfind -interpret -name %s %s"
-                helm-ff-newfile-prompt-p nil
-                helm-M-x-fuzzy-match t)
-          (helm-mode)
-          (use-package helm-swoop
-            :ensure t
-            :bind ("H-w" . helm-swoop)))
-	  (use-package helm-descbinds
-		:ensure t
-		:init (helm-descbinds-mode)
-		)
-backup.bak		:config (setq helm-allow-mouse t)
-  :bind (("C-c h" . helm-command-prefix)
-         ("C-x b" . helm-mini)
-         ("C-`" . helm-resume)
-         ("M-x" . helm-M-x)
-         ("C-x C-f" . helm-find-files)))
-#+end_src
 *** IDO
 
     First, just start the ido major mode
@@ -547,11 +505,11 @@ for ligatures. Very useful, if you ask me.
 just a splash of eye candy. It's rare to find. 
 
 #+begin_src emacs-lisp :tangle yes
-(use-package org-bullets
-  :ensure t
-  ;:hook (org-mode . lambda () (org-bullets-mode 1))
-  :config (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
-  )
+  (use-package org-bullets
+    :ensure t
+    :hook (org-mode . lambda () (org-bullets-mode 1))
+    :;; config (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))) 
+    )
 #+end_src
 *** Rainbow delimiters
 
@@ -566,7 +524,7 @@ colour while each non-matching has different.
   :init
   (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
   (add-hook 'LaTex-mode-hook #'rainbow-delimiters-mode)
-  (add-hook 'org-mode-hook 'rainbow-delimiters-mode)
+  (add-hook 'org-mode-hook #'rainbow-delimiters-mode)
   )
 #+end_src
 *** FLy- check and spell
@@ -613,7 +571,6 @@ to a sexp.
 (use-package expand-region
   :ensure t
   :bind ("C-v" . er/expand-region)
-  :bind ("C-S-v" . /er/contract-region)
   )
 #+end_src
 

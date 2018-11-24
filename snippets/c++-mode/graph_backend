@@ -1,0 +1,9 @@
+# key: #g
+# name: graph_backend
+# --
+#if ${1:GRAPH_BACKEND} == BOOST
+#error "Not yet implemented. Do not use!"
+#elif $1 == LIGRA
+
+#else
+#endif //$1 == LIGRA
