@@ -1,22 +1,19 @@
+#+TITLE: My Emacs Config. 
 Please note, all entries marked todo do not work properly in my configuration. Use at own risk and mind conflicts. 
 
-
 * Small tweaks
-
 ** Re-enabling functions
 Some very useful functions are being disabled by default. Even though
 I can understand that ther developers are trying to make this as easy
 on newcomers as they can make it, having CUA-mode disabled by default
 and having these swtiched off makes very little sense. 
+
 #+begin_src emacs-lisp :tangle yes
-;; these functions are useful. activate them.
 (put 'downcase-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 (put 'dired-find-alternate-file 'disabled nil)
 #+end_src
-
-
 
 ** Time saving
    Minimise typing in prompts
@@ -30,7 +27,6 @@ and having these swtiched off makes very little sense.
    Syntax highlighting when writing in org mode is a must. 
 
 #+begin_src emacs-lisp :tangle yes
-;; (setq org-src-fontify-natively t)
   (custom-set-variables
    '(org-fontify-natively t)
    )
@@ -55,31 +51,28 @@ One caveat is the changed syntax, and the fact that it's less readable than `set
    So, a more sane set of defaults would be:
    
 #+begin_src emacs-lisp :tangle yes
-(setq split-height-threshold nil)
-(setq split-width-threshold 0)
+  (custom-set-variables 
+   '(split-height-threshold nil) 
+   '(split-width-threshold 0)
+   )
 #+end_src
 
-** TODO Open csv in latex mode
-
-   I use Anki. Org mode anki is a good thing if you're dealing with
-   complicated expressions, and you want to nail the layout. I'm
-   dealing with maths in bulk. So I use csv to export and import to
-   and fro. 
-   #+begin_src emacs-lisp :tangle no
-     (add-to-list 'auto-mode-alist '("'\\.csv\\'" . LaTeX-mode))
-   #+end_src
-
-
-** Add todo
+** Add to-do
 
    Add a todo item to my main dropbox account. 
 
 #+begin_src emacs-lisp :tangle yes
-(defun todo()
-(interactive)
-(find-file "/Users/app/Dropbox/org-notes/todo.org")
-)
+  (defun todo()
+    (interactive)
+    (find-file "/Users/app/Dropbox/org-notes/todo.org")
+    )
 #+end_src
+** Start Emacs Server
+
+#+begin_src emacs-lisp :tangle yes
+  (server-start)
+#+end_src
+
 * Packages
 ** Core
 The =package.el= and =use-package= are provided here for reference
@@ -90,15 +83,16 @@ file.
 The most important package to manage packages. 
 
 #+begin_src emacs-lisp :tangle no
-(require 'package)
+  (require 'package)
 
-(add-to-list 'package-archives
-             '("melpa" . "http://melpa.org/packages/") t)
-(add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
-(when (boundp 'package-pinned-packages)
-  (setq package-pinned-packages
-        '((org-plus-contrib . "org"))))
-(package-initialize)
+  (add-to-list 'package-archives
+	       '("melpa" . "http://melpa.org/packages/") t)
+  (add-to-list 'package-archives 
+	       '("org" . "http://orgmode.org/elpa/") t)
+  (when (boundp 'package-pinned-packages)
+    (setq package-pinned-packages
+	  '((org-plus-contrib . "org"))))
+  (package-initialize)
 #+end_src
 
 
@@ -134,8 +128,14 @@ up-to-date org.
 
 
 #+begin_src emacs-lisp :tangle yes
-(use-package org
-  :ensure org-plus-contrib)
+  (use-package org
+    :ensure org-plus-contrib
+    :bind 
+    ("s-<up>" . outline-previous-heading)
+    ("s-<down>" . outline-next-heading)
+    ("M-s-<up>" . org-babel-previous-src-block)
+    ("M-s-<down>" . org-babel-next-src-block)
+    )
 #+end_src
 
 #+begin_src emacs-lisp :tangle yes
@@ -149,16 +149,21 @@ up-to-date org.
 *** Yet another snippet framework
 
 `Yasnippet` is probably the most powerful tool in emacs. Give me only yas and I can produce source incredibly quickly. 
+
+ONe thing I noticed is that <tab> is an important and sometimes overused expansion 
 #+begin_src emacs-lisp :tangle yes
-(use-package yasnippet
-  :ensure t
-  :mode ("/\\.emacs\\.d/snippets/" . snippet-mode)
-  :init
-  (custom-set-variables
-    '( yas-verbosity 3)
-    '(yas-global-mode 1)
+  (use-package yasnippet
+    :ensure t
+    :mode ("/\\.emacs\\.d/snippets/" . snippet-mode)
+    :init
+    (custom-set-variables
+      '(yas-verbosity 3)
+      '(yas-global-mode 1)
+      )
     )
-  )
+    (define-key yas-minor-mode-map (kbd "<tab>") nil)
+    (define-key yas-minor-mode-map (kbd "TAB") nil)
+    (define-key yas-minor-mode-map (kbd "M-SPC") 'yas-expand)
 #+end_src
 
 *** Company
@@ -172,10 +177,11 @@ It essentially can:
   (use-package company
     :ensure t
     :commands company-mode
-    :init
-    (add-hook 'prog-mode-hook 'company-mode)
-    (add-hook 'LaTeX-mode-hook 'company-mode)
-    (add-hook 'org-mode-hook 'company-mode)
+    :hook ((prog-mode LaTeX-mode org-mode) . company-mode)
+    ;:init
+    ;(add-hook 'prog-mode-hook 'company-mode)
+    ;(add-hook 'LaTeX-mode-hook 'company-mode)
+    ;(add-hook 'org-mode-hook 'company-mode)
     :config
    (custom-set-variables
    '(company-idle-delay .5)
@@ -183,24 +189,17 @@ It essentially can:
    '(company-echo-delay 1)
    '(company-minimum-prefix-length 2)
    '(company-selection-wrap-around t)
-   '(company-transformers '(company-sort-by-occurrence company-sort-by-backend-importance ))
-   )
-    :bind ("M-<Space>" . company-complete-common)
+   '(company-transformers '(company-sort-by-occurrence company-sort-by-backend-importance )))
     )
 #+end_src
 
 Since you sometimes do need to know what your completion does, it's useful to have this snippet. 
 
 #+begin_src emacs-lisp :tangle yes
-(use-package company-quickhelp
-  :ensure t
-  :defer t
-  :hook global-company-mode
-  )
-#+end_src
-
-#+begin_src emacs-lisp :tangle yes
-(define-key global-map (kbd "C-.") 'company-files)
+  (use-package company-quickhelp
+    :ensure t
+    :defer t
+    :hook global-company-mode )
 #+end_src
 
 
@@ -224,6 +223,8 @@ Probably the most underrted package in existence. It's a must to have when doing
     ("M-]" . sp-forward-slurp-sexp)
     ("M-S-[" . sp-backward-barf-sexp)
     ("M-S-]" . sp-forward-barf-sexp)
+    ("C-c M-s s-u" . sp-unwrap-sexp)
+    ("C-c M-s s-r" . sp-rewrap-sexp)
     :config
     (require 'smartparens-config)
     ;; markdown
@@ -312,7 +313,6 @@ It's not as powerful or as intuitive as the macros present in vim or emacs, but 
     )
 #+end_src
 
-
 ** Utilities
 *** Sudo-save
 
@@ -394,17 +394,17 @@ present in ido, is fuzzy matching.Sadly it crashes ido.
 This replaces macros in text with the corresponding ASCII symbols. If you have a huge formula, this helps immensely. 
 
 #+begin_src emacs-lisp :tangle yes
-(use-package latex-pretty-symbols
-  :ensure t
-  :init
-  (progn 
-    (add-hook 'LaTeX-mode-hook 'prettify-symbols-mode)
-    (add-hook 'LaTex-mode-hook 'LaTeX-math-mode)
-    (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
-    (setq reftex-plug-into-AUCTeX t)
-    (setq TeX-auto-save t)
+  (use-package latex-pretty-symbols
+    :ensure t
+    ;:hook (LaTeX-mode . (prettify-symbols-mode LaTeX-math-mode turn-on-reftex))
+    :init
+    (progn 
+      (add-hook 'LaTeX-mode-hook 'prettify-symbols-mode) 
+      (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+      (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+      (custom-set-variables '(reftex-plug-into-AUCTeX t) '(TeX-auto-save t))
+      )
     )
-  )
 
 #+end_src
 
@@ -414,40 +414,78 @@ source code. I found that it made python source code even more
 readablke for example. 
 
 #+begin_src emacs-lisp :tangle yes
-(global-prettify-symbols-mode 1)
-(add-hook
- 'python-mode-hook
- (lambda ()
-   (mapc (lambda (pair) (push pair prettify-symbols-alist))
-         '(;; Syntax
-           ("def" .      #x2131)
-           ("not" .      #x2757)
-           ("in" .       #x2208)
-           ("not in" .   #x2209)
-           ("return" .   #x27fc)
-           ("yield" .    #x27fb)
-           ("for" .      #x2200)
-           ;; Base Types
-           ("int" .      #x2124)
-           ("float" .    #x211d)
-           ("str" .      #x1d54a)
-           ("True" .     #x1d54b)
-           ("False" .    #x1d53d)
-           ;; Mypy
-	   ("*"	.	 #x00d7)
-           ("Dict" .     #x1d507)
-           ("List" .     #x2112)
-           ("Tuple" .    #x2a02)
-           ("Set" .      #x2126)
-	   ("sum" . 	 #x2211)
-           ("Iterable" . #x1d50a)
-           ("Any" .      #x2754)
-	   ("lambda" .	 #x03bb)
-           ("Union" .    #x22c3)
+  (global-prettify-symbols-mode 1)
+  (add-hook
+   'python-mode-hook
+   (lambda ()
+     (mapc (lambda (pair) (push pair prettify-symbols-alist))
+	   '(;; Syntax
+	     ("def" .      #x2131)
+	     ("not" .      #x2757)
+	     ("in" .       #x2208)
+	     ("not in" .   #x2209)
+	     ("return" .   #x27fc)
+	     ("yield" .    #x27fb)
+	     ("for" .      #x2200)
+	     ;; Base Types
+	     ("int" .      #x2124)
+	     ("float" .    #x211d)
+	     ("str" .      #x1d54a)
+	     ("True" .     #x1d54b)
+	     ("False" .    #x1d53d)
+	     ;; Mypy
+	     ("*"	.  #x00d7)
+	     ("Dict" .     #x1d507)
+	     ("List" .     #x2112)
+	     ("Tuple" .    #x2a02)
+	     ("Set" .      #x2126)
+	     ("sum" . 	   #x2211)
+	     ("Iterable" . #x1d50a)
+	     ("Any" .      #x2754)
+	     ("lambda" .	 #x03bb)
+	     ("Union" .    #x22c3)
+	     )
 	   )
-	 )
+     )
    )
- )
+
+  (add-hook
+   'c++-mode-hook
+   (lambda ()
+     (mapc (lambda (pair) (push pair prettify-symbols-alist))
+	   '(;; Syntax
+	     ("void" . #x2132)
+	     ("!" . #x2757)
+	     ("in" . #x2208)
+	     ("not in" . #x2209)
+	     ("return" . #x27fc)
+	     ;; ("cout" .     #x27fb)
+	     ("for" . #x2200)
+	     ;; Base Types
+	     ("bool" . #x2234)
+	     ("auto" . #x04D4)
+	     ("char" . #x2135)
+	     ("int" . #x2124)
+	     ("float" . #x211d)
+	     ("double" . #x211d)
+	     ("string" . #x1d54a)
+	     ("true" . #x1d54b)
+	     ("false" . #x1d53d)
+	     ;; Mypy
+	     ("*" . #x2217)
+	     ("unordered_map" . #x1d507)
+	     ("vector" . #x2112)
+	     ("tuple" . #x2a02)
+	     ("set" . #x2126)
+	     ("sum" . #x2211)
+	     ("Iterable" . #x1d50a)
+	     ("Any" . #x2754)
+	     ("lambda" . #x03bb)
+	     ("Union" . #x22c3)
+	     )
+	   )
+     )
+   )
 #+end_src
 
 *** TODO Fira code
@@ -499,25 +537,24 @@ just a splash of eye candy. It's rare to find.
 #+begin_src emacs-lisp :tangle yes
   (use-package org-bullets
     :ensure t
-    ;;:hook (org-mode . lambda () (org-bullets-mode 1))
-    :config (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))) 
+    :hook (org-mode . (lambda () (org-bullets-mode 1)))
     )
 #+end_src
-*** Rainbow delimiters
 
 Ever had so many parentheses that you could barely orient yourself
 around? No more. Now each matching set of parentheses has the same
 colour while each non-matching has different. 
 
 #+begin_src emacs-lisp :tangle yes
-(use-package rainbow-delimiters
-  :ensure t 
-  :commands rainbow-delimiters-mode
-  :init
-  (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
-  (add-hook 'LaTex-mode-hook #'rainbow-delimiters-mode)
-  (add-hook 'org-mode-hook #'rainbow-delimiters-mode)
-  )
+  (use-package rainbow-delimiters
+    :ensure t 
+    :commands rainbow-delimiters-mode
+    :hook ((prog-mode LaTeX-mode org-mode) . rainbow-delimiters-mode)
+    ;; :init
+    ;; (add-hook 'prog-mode-hook #'rainbow-delimiters-mode)
+    ;; (add-hook 'LaTex-mode-hook #'rainbow-delimiters-mode)
+    ;; (add-hook 'org-mode-hook #'rainbow-delimiters-mode)
+    )
 #+end_src
 *** FLy- check and spell
 
@@ -528,22 +565,24 @@ you start a long and tedious compile.
 #+begin_src emacs-lisp :tangle yes
   (use-package flycheck
     :ensure t
-    :config (progn (add-hook 'after-init-hook #'global-flycheck-mode)
-		   (add-hook 'python-mode-hook (lambda ()
-						 (flycheck-select-checker 'python-pylint)))
-		   )
+    :hook (after-init . global-flycheck-mode)
+    :config   (add-hook 'python-mode-hook 
+    (lambda () (flycheck-select-checker 'python-pylint)))
     )
+    
                  
   (use-package flyspell
     :ensure t
     :defer t
+    :hook ((markdown-mode text-mode LaTeX-mode) . (lambda () (flyspell-mode 1)))
     :init
     (progn
       (setq-default ispell-program-name "aspell")
       (setq-default ispell-extra-args '("--sug-mode=fast"))
       (setq-default ispell-dictionary "english")
-      (add-hook 'markdown-mode-hook '(lambda () (flyspell-mode 1)))
-      (add-hook 'text-mode-hook '(lambda () (flyspell-mode 1))))
+      ;;(add-hook 'markdown-mode-hook '(lambda () (flyspell-mode 1)))
+      ;;(add-hook 'text-mode-hook '(lambda () (flyspell-mode 1)))
+      )
     :config
     )
 
@@ -635,7 +674,9 @@ function here. Sadly it can't change the notification's icon.
 
 *** TODO Alert
 
-Alert is a useful package that is used by many others
+    Alert is a useful package that is used by many others. 
+
+
 
 #+begin_src emacs-lisp :tangle no
   (use-package alert
@@ -643,7 +684,7 @@ Alert is a useful package that is used by many others
     :config
     (alert-add-rule :mode     'org-mode
 		    :category "random-todo"
-		    :style 'notifier
+		    :style 'noti
 		    :continue t)
     (alert-add-rule :mode 'org-mode
 		    :category "org-alert"
@@ -791,14 +832,21 @@ A relatively crude solution is to use org-random-todo
     :after org
     :commands (org-random-todo-mode org-random-todo)
     :config
-    (setq org-random-todo-how-often 1500)
-    (org-random-todo-mode 1))
+    (custom-set-variables '(org-random-todo-how-often 1500))
+    (org-random-todo-mode 1)
+    )
 
 #+end_src
 
-But a much better solution is org-todo. 
+But a much better solution is org-to-do. 
 
+*** string-inflection
 
+#+begin_src emacs-lisp :tangle yes
+  (use-package string-inflection
+    :ensure t
+    )
+#+end_src
 * Languages 
 ** Markup
 *** LaTeX
@@ -814,23 +862,29 @@ cdlatex helps when you edit in org mode. It's useful when used with AuCTeX
 AuCTeX is what does most of the heavy lifting. It has plenty of fnctions to help out with latex input. 
 
 #+begin_src emacs-lisp :tangle yes
-(use-package tex
-  :defer t
-  :ensure auctex
-  :config
-  (setq TeX-auto-save t)
-  )
+  (use-package tex
+    :defer t
+    :ensure auctex
+    :config
+    (custom-set-variables 
+     '(TeX-auto-save t)
+     )
+    )
 #+end_src
 
 *** Reveal.js
+
 #+begin_src emacs-lisp :tangle yes
   (use-package ox-reveal
-    :ensure t)
-  (setq org-reveal-root "http://cdn.jsdelivr.net/reveal.js/3.0.0/")
-  ;; (setq org-reveal-mathjax t)		
+    :ensure t
+    :config 
+    (custom-set-variables 
+     '(org-reveal-root "http://cdn.jsdelivr.net/reveal.js/3.0.0/")
+     '(org-reveal-mathjax t)
+     )
+    )		
 #+end_src
 ** Interpreted
-
 *** Python
 
 * Keybindings
@@ -842,37 +896,47 @@ Remember `C-c '.`
 
 I Also like to have the ability to comment and uncomment blocks of
 text on a whim. 
+
+I also found that having the Mac Keybindings makes a lot more sense in some cases. Specifically, the normal CUA keybindings are the same as Mac OS X except super and Meta have the opposite places. 
+
 #+begin_src emacs-lisp :tangle yes
-  (global-set-key (kbd "C-M-;") 'comment-region-or-line )
-  (global-set-key (kbd "C-M-:") 'uncomment-region-or-line )
+  (global-set-key (kbd "C-M-;") 'comment-line )
+  (global-set-key (kbd "C-M-:") 'uncomment-region )
   (global-set-key (kbd "s-c") 'kill-ring-save)
   (global-set-key (kbd "s-v") 'yank)
   (global-set-key (kbd "s-z") 'undo)
   (global-set-key (kbd "s-s") 'save-buffer)
+  (global-set-key (kbd "s-a") 'mark-whole-buffer)
+  (global-set-key (kbd "M-s-a") 'outline-show-all)
+  (global-set-key (kbd "s-<right>") 'move-end-of-line)
+  (global-set-key (kbd "s-<left>") 'move-beginning-of-line)
+  (global-set-key (kbd "s-<backspace>") 'kill-whole-line)
+  (global-set-key (kbd "s-<delete>") 'kill-line)
+  (global-set-key (kbd "s-q") 'save-buffers-kill-emacs)
+  (global-set-key (kbd "s-w") 'kill-buffer-and-window)
 #+end_src
 
 
+#+begin_src emacs-lisp :tangle yes
+(delete-selection-mode 1)
+#+end_src
 
 ** Packages
 
 *** Smartparens
 
-Smartparens offers the `sp-backward-unwrap-sexp` which conflicts with the default behaviour of `m-backspace` 
+Smartparens offered the `sp-backward-unwrap-sexp` which conflicts with the default behaviour of `m-backspace`. 
+
+The developer kindly agreed that these key-binds aren't universal and allowed me to make the following-default. 
 
 #+begin_src emacs-lisp :tangle yes
   (define-key smartparens-mode-map (kbd "M-<backspace>") 'sp-backward-kill-sexp)
-  (define-key smartparens-mode-map (kbd "M-<delete>") 'sp-forward-kill-sexp)
+  (define-key smartparens-mode-map (kbd "M-<delete>") 'sp-kill-sexp)
 #+end_src
 
-Remember the function we made to quickly jot down a todo. Let's add
+Remember the function we made to quickly jot a todo. Let's add
 some spice to it. 
 
 #+begin_src emacs-lisp :tangle yes
   (global-set-key (kbd "C-x t") 'quick-todo)
-#+end_src
-
-#+begin_src emacs-lisp :tangle
-(if (eq system-type 'darwin)
-    (progn
-      (setq mac-option-modifier 'meta)))
 #+end_src
