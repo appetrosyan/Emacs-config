@@ -1,4 +1,5 @@
 # key: \delta
 # name: kronecker-delta
+# binding: C-` C-d
 # --
 \delta_{$1, $1'}

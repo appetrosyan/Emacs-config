@@ -2,6 +2,6 @@
 # name: conditional compile
 # key: #id
 # --
-#ifdef ${1:USE_BOOST}
+#ifdef ${1:COMPILE_THIS}
 $0
 #endif /* $1 */

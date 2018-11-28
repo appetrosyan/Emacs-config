@@ -3,4 +3,4 @@
 # binding : C-` > 
 # contributor : 
 # --
-| ${1:`yas-selected-text`} \rangle
+\left| ${1:`yas-selected-text`} \rangle

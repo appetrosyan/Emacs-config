@@ -3,6 +3,6 @@
 # key: el
 # --
 
-#+begin_src emacs-lisp :tangle
-$0
+#+begin_src emacs-lisp :tangle ${1:yes}
+	$0
 #+end_src

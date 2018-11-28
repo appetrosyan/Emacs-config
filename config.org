@@ -29,6 +29,7 @@ and having these swtiched off makes very little sense.
 #+begin_src emacs-lisp :tangle yes
   (custom-set-variables
    '(org-fontify-natively t)
+   '(org-enforce-todo-dependencies t)
    )
 #+end_src
 
@@ -37,7 +38,10 @@ Custom set variables is a powerful tool and overrides most of what you do in an 
 One caveat is the changed syntax, and the fact that it's less readable than `setq` for example. The good thing though, is that if in emacs for some reason something in your config file doesn't load, you know how to fix it. 
 
 #+begin_src emacs-lisp :tangle yes
-  (custom-set-variables '(global-linum-mode t))
+  (custom-set-variables 
+  '(global-linum-mode t)
+  '(cursor-type 'bar)
+  )
 #+end_src
 
 ** Splitting windows horizontally
@@ -157,9 +161,14 @@ ONe thing I noticed is that <tab> is an important and sometimes overused expansi
     :mode ("/\\.emacs\\.d/snippets/" . snippet-mode)
     :init
     (custom-set-variables
-      '(yas-verbosity 3)
-      '(yas-global-mode 1)
+     '(yas-global-mode 1)
       )
+    :config
+    (custom-set-variables
+     '(yas-verbosity 3)
+     '(yas-wrap-around-region t)
+     '(yas-use-menu 'abbreviate)
+     )
     )
     (define-key yas-minor-mode-map (kbd "<tab>") nil)
     (define-key yas-minor-mode-map (kbd "TAB") nil)
@@ -189,8 +198,11 @@ It essentially can:
    '(company-echo-delay 1)
    '(company-minimum-prefix-length 2)
    '(company-selection-wrap-around t)
-   '(company-transformers '(company-sort-by-occurrence company-sort-by-backend-importance )))
-    )
+   '(company-show-numbers t)
+   '(company-transformers
+     '(company-sort-by-occurrence company-sort-by-backend-importance )
+     ))
+   )
 #+end_src
 
 Since you sometimes do need to know what your completion does, it's useful to have this snippet. 
@@ -580,8 +592,6 @@ you start a long and tedious compile.
       (setq-default ispell-program-name "aspell")
       (setq-default ispell-extra-args '("--sug-mode=fast"))
       (setq-default ispell-dictionary "english")
-      ;;(add-hook 'markdown-mode-hook '(lambda () (flyspell-mode 1)))
-      ;;(add-hook 'text-mode-hook '(lambda () (flyspell-mode 1)))
       )
     :config
     )
@@ -900,20 +910,30 @@ text on a whim.
 I also found that having the Mac Keybindings makes a lot more sense in some cases. Specifically, the normal CUA keybindings are the same as Mac OS X except super and Meta have the opposite places. 
 
 #+begin_src emacs-lisp :tangle yes
-  (global-set-key (kbd "C-M-;") 'comment-line )
-  (global-set-key (kbd "C-M-:") 'uncomment-region )
-  (global-set-key (kbd "s-c") 'kill-ring-save)
-  (global-set-key (kbd "s-v") 'yank)
-  (global-set-key (kbd "s-z") 'undo)
-  (global-set-key (kbd "s-s") 'save-buffer)
-  (global-set-key (kbd "s-a") 'mark-whole-buffer)
-  (global-set-key (kbd "M-s-a") 'outline-show-all)
-  (global-set-key (kbd "s-<right>") 'move-end-of-line)
-  (global-set-key (kbd "s-<left>") 'move-beginning-of-line)
+  (global-set-key (kbd "C-M-;") 	'comment-line) 
+  (global-set-key (kbd "C-M-:") 	'uncomment-region)
+  (global-set-key (kbd "s-c") 		'kill-ring-save)
+  (global-set-key (kbd "s-v") 		'yank)
+  (global-set-key (kbd "s-z") 		'undo)
+  (global-set-key (kbd "s-s") 		'save-buffer)
+  (global-set-key (kbd "s-a") 		'mark-whole-buffer)
+  (global-set-key (kbd "M-s-a") 	'outline-show-all)
+  (global-set-key (kbd "s-<right>") 	'move-end-of-line)
+  (global-set-key (kbd "s-<left>") 	'move-beginning-of-line)
   (global-set-key (kbd "s-<backspace>") 'kill-whole-line)
-  (global-set-key (kbd "s-<delete>") 'kill-line)
-  (global-set-key (kbd "s-q") 'save-buffers-kill-emacs)
-  (global-set-key (kbd "s-w") 'kill-buffer-and-window)
+  (global-set-key (kbd "s-<delete>") 	'kill-line)
+  (global-set-key (kbd "s-q") 		'save-buffers-kill-emacs)
+  (global-set-key (kbd "s-w") 		'kill-buffer-and-window)
+  (global-set-key (kbd "C-s-[") 	'shrink-window-horizontally)
+  (global-set-key (kbd "C-s-]") 	'enlarge-window-horizontally)
+  (global-set-key (kbd "s-, c") 'reconfigure)
+  (global-set-key (kbd "s-, r") 'reload-config)
+  (custom-set-variables
+   '(mac-command-modifier 'super)
+   '(mac-option-modifier 'meta)
+   '(mac-right-option-modifier nil)
+   '(emulate-mac-brittish-keyboard-mode t)
+   )
 #+end_src
 
 
