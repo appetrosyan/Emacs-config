@@ -928,6 +928,7 @@ I also found that having the Mac Keybindings makes a lot more sense in some case
   (global-set-key (kbd "C-s-]") 	'enlarge-window-horizontally)
   (global-set-key (kbd "s-, c") 'reconfigure)
   (global-set-key (kbd "s-, r") 'reload-config)
+  (global-set-key (kbd "s-r") 'revert-buffer)
   (custom-set-variables
    '(mac-command-modifier 'super)
    '(mac-option-modifier 'meta)
